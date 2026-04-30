@@ -1727,12 +1727,29 @@ var useRouteLoading = /* @__PURE__ */ __name(() => {
   return context;
 }, "useRouteLoading");
 
+// src/Utils/createRouterConfig.tsx
+var createRouterConfig = /* @__PURE__ */ __name(({
+  entry,
+  components,
+  routes,
+  notFoundComponent
+}) => {
+  return {
+    entry,
+    components,
+    routes,
+    notFoundComponent
+  };
+}, "createRouterConfig");
+
 exports.RouteI18nContext = RouteI18nContext;
 exports.RouteLoadingContext = RouteLoadingContext;
 exports.Router = Router;
-exports.RouterCore = RouterCore;
 exports.RouterCoreContext = RouterCoreContext;
-exports.RouterOutlet = RouterOutlet;
+exports.createRouterConfig = createRouterConfig;
+exports.extractLanguage = extractLanguage;
+exports.extractRegion = extractRegion;
+exports.toLocale = toLocale;
 exports.useRouteI18n = useRouteI18n;
 exports.useRouteLanguage = useRouteLanguage;
 exports.useRouteLoading = useRouteLoading;

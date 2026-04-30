@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { useRouterState, Outlet, createRootRoute, createRoute, redirect, createRouter, RouterProvider } from '@tanstack/react-router';
+import { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import { useRouterState, createRootRoute, createRoute, redirect, createRouter, RouterProvider, Outlet } from '@tanstack/react-router';
 import { I18n } from '@lingui/core';
 import { I18nProvider, Trans } from '@lingui/react';
 import { jsx } from 'react/jsx-runtime';
@@ -1725,6 +1725,21 @@ var useRouteLoading = /* @__PURE__ */ __name(() => {
   return context;
 }, "useRouteLoading");
 
-export { RouteI18nContext, RouteLoadingContext, Router, RouterCore, RouterCoreContext, RouterOutlet, useRouteI18n, useRouteLanguage, useRouteLoading, useRouteLocale, useRouteRegion, useRouter };
+// src/Utils/createRouterConfig.tsx
+var createRouterConfig = /* @__PURE__ */ __name(({
+  entry,
+  components,
+  routes,
+  notFoundComponent
+}) => {
+  return {
+    entry,
+    components,
+    routes,
+    notFoundComponent
+  };
+}, "createRouterConfig");
+
+export { RouteI18nContext, RouteLoadingContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteLanguage, useRouteLoading, useRouteLocale, useRouteRegion, useRouter };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

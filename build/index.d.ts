@@ -1,6 +1,6 @@
 import * as React from 'react';
 import React__default, { FC } from 'react';
-import { NotFoundRouteProps, AnyRouter } from '@tanstack/react-router';
+import { NotFoundRouteProps } from '@tanstack/react-router';
 
 type IRouteId = string;
 type IRouteLocale = string;
@@ -78,35 +78,12 @@ interface IRouteI18N {
     load(language: IRouteLanguage, messages: ITranslations): void;
 }
 type ITranslations = Record<string, string>;
-
 interface RouterProps {
     config: IRouterConfig;
     loadTranslation(language: IRouteLanguage): ITranslations | Promise<ITranslations>;
 }
+
 declare const Router: FC<RouterProps>;
-
-declare class RouterCore<TRouter extends AnyRouter> implements IRouter {
-    private readonly _router;
-    private readonly _config;
-    constructor(config: IRouterConfig, router: TRouter);
-    static new<TRouter extends AnyRouter>(config: IRouterConfig, router: TRouter): RouterCore<TRouter>;
-    reload(): void;
-    canGoBack(): any;
-    goBack(): Promise<void>;
-    navigate<T>({ to, from, query, params, hash, method, state, target, }: NavigateParams<T>): Promise<undefined>;
-    path(id: IRouteId, locale: IRouteLocale): string;
-    path(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
-    href({ id, locale, query, params, hash }: HrefParams): string;
-    relative({ id, locale, query, params, hash }: HrefParams): string;
-    absolute({ baseUrl, id, locale, query, params, hash }: AbsoluteHrefParams): string;
-    hasRoute(id: IRouteId, locale: IRouteLocale): boolean;
-    defaultLanguage(): IRouteLanguage;
-    languages(): IRouteLanguage[];
-    regionsByLanguage(): Record<IRouteLanguage, IRouteRegion[]>;
-    private _route;
-}
-
-declare const RouterOutlet: FC;
 
 declare const RouterCoreContext: React.Context<IRouter | undefined>;
 
@@ -126,4 +103,24 @@ declare const useRouteRegion: () => IRouteRegion | null;
 
 declare const useRouteLoading: () => boolean;
 
-export { type AbsoluteHrefParams, type HrefParams, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteEntry, type IRouteI18N, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, RouteI18nContext, RouteLoadingContext, Router, RouterCore, RouterCoreContext, RouterOutlet, type RouterProps, useRouteI18n, useRouteLanguage, useRouteLoading, useRouteLocale, useRouteRegion, useRouter };
+declare const createRouterConfig: ({ entry, components, routes, notFoundComponent, }: {
+    entry: IRouteEntry;
+    components: IRouteComponents;
+    routes: IRoutes;
+    notFoundComponent: (props: NotFoundRouteProps) => React__default.ReactNode;
+}) => IRouterConfig;
+
+declare const extractLanguage: ({ locale, }: {
+    locale: IRouteLocale;
+}) => IRouteLanguage;
+
+declare const extractRegion: ({ locale, }: {
+    locale: IRouteLocale;
+}) => IRouteRegion;
+
+declare const toLocale: ({ language, region, }: {
+    language: IRouteLanguage;
+    region: IRouteRegion;
+}) => IRouteLocale;
+
+export { type AbsoluteHrefParams, type HrefParams, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteEntry, type IRouteI18N, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, RouteI18nContext, RouteLoadingContext, Router, RouterCoreContext, type RouterProps, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteLanguage, useRouteLoading, useRouteLocale, useRouteRegion, useRouter };
