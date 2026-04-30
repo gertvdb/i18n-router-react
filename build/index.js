@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useMemo, useEffect } from 'react';
-import { useRouterState, createRootRoute, createRoute, redirect, createRouter, RouterProvider, Outlet } from '@tanstack/react-router';
+import { useRouterState, createRootRoute, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, Outlet } from '@tanstack/react-router';
 import { I18n } from '@lingui/core';
 import { I18nProvider, Trans } from '@lingui/react';
 import { jsx } from 'react/jsx-runtime';
@@ -1724,6 +1724,37 @@ var useRouteLoading = /* @__PURE__ */ __name(() => {
   }
   return context;
 }, "useRouteLoading");
+function useRouteParams({ router, route }) {
+  const path = useMemo(() => {
+    return router.path(route.id, route.locale);
+  }, [route.id, route.locale, router]);
+  return useParams({ from: path });
+}
+__name(useRouteParams, "useRouteParams");
+
+// src/Utils/pickKeys.tsx
+function pickKeys(obj, keys) {
+  const picked = {};
+  keys.forEach((key) => {
+    if (key in obj) {
+      picked[key] = obj[key];
+    }
+  });
+  return picked;
+}
+__name(pickKeys, "pickKeys");
+
+// src/Hooks/useRouteQuery.tsx
+function useRouteQuery({ router, route, keys }) {
+  const path = useMemo(() => {
+    return router.path(route.id, route.locale);
+  }, [route.id, route.locale, router]);
+  const fetchedParams = useSearch({ from: path });
+  return useMemo(() => {
+    return keys ? pickKeys(fetchedParams, keys) : fetchedParams;
+  }, [fetchedParams, keys]);
+}
+__name(useRouteQuery, "useRouteQuery");
 
 // src/Utils/createRouterConfig.tsx
 var createRouterConfig = /* @__PURE__ */ __name(({
@@ -1740,6 +1771,6 @@ var createRouterConfig = /* @__PURE__ */ __name(({
   };
 }, "createRouterConfig");
 
-export { RouteI18nContext, RouteLoadingContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteLanguage, useRouteLoading, useRouteLocale, useRouteRegion, useRouter };
+export { RouteI18nContext, RouteLoadingContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteLanguage, useRouteLoading, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

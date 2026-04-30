@@ -1,5 +1,3 @@
-import { toLocale } from "@/Utils/toLocale";
-
 export { Router } from "./Router";
 export * from "./Types";
 
@@ -15,6 +13,8 @@ export { useRouteLanguage } from "./Hooks/useRouteLanguage";
 export { useRouteLocale } from "./Hooks/useRouteLocale";
 export { useRouteRegion } from "./Hooks/useRouteRegion";
 export { useRouteLoading } from "./Hooks/useRouteLoading";
+export { useRouteParams } from "./Hooks/useRouteParams";
+export { useRouteQuery } from "./Hooks/useRouteQuery";
 
 // Utils
 export { createRouterConfig } from "./Utils/createRouterConfig";

@@ -1726,6 +1726,37 @@ var useRouteLoading = /* @__PURE__ */ __name(() => {
   }
   return context;
 }, "useRouteLoading");
+function useRouteParams({ router, route }) {
+  const path = react.useMemo(() => {
+    return router.path(route.id, route.locale);
+  }, [route.id, route.locale, router]);
+  return reactRouter.useParams({ from: path });
+}
+__name(useRouteParams, "useRouteParams");
+
+// src/Utils/pickKeys.tsx
+function pickKeys(obj, keys) {
+  const picked = {};
+  keys.forEach((key) => {
+    if (key in obj) {
+      picked[key] = obj[key];
+    }
+  });
+  return picked;
+}
+__name(pickKeys, "pickKeys");
+
+// src/Hooks/useRouteQuery.tsx
+function useRouteQuery({ router, route, keys }) {
+  const path = react.useMemo(() => {
+    return router.path(route.id, route.locale);
+  }, [route.id, route.locale, router]);
+  const fetchedParams = reactRouter.useSearch({ from: path });
+  return react.useMemo(() => {
+    return keys ? pickKeys(fetchedParams, keys) : fetchedParams;
+  }, [fetchedParams, keys]);
+}
+__name(useRouteQuery, "useRouteQuery");
 
 // src/Utils/createRouterConfig.tsx
 var createRouterConfig = /* @__PURE__ */ __name(({
@@ -1754,6 +1785,8 @@ exports.useRouteI18n = useRouteI18n;
 exports.useRouteLanguage = useRouteLanguage;
 exports.useRouteLoading = useRouteLoading;
 exports.useRouteLocale = useRouteLocale;
+exports.useRouteParams = useRouteParams;
+exports.useRouteQuery = useRouteQuery;
 exports.useRouteRegion = useRouteRegion;
 exports.useRouter = useRouter;
 //# sourceMappingURL=index.cjs.map
