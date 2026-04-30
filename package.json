@@ -1,6 +1,9 @@
 {
   "name": "@gertvdb/react-i18n-router",
-  "version": "0.1.2",
+  "version": "0.1.3",
+  "repository": {
+    "url": "https://github.com/gertvdb/i18n-router-react"
+  },
   "description": "A React router with built-in internationalization (i18n) support, powered by TanStack Router and Lingui.",
   "main": "./build/index.cjs",
   "module": "./build/index.js",
