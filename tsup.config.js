@@ -26,7 +26,7 @@ export default defineConfig([
         ], // Entry point(s)
         format: ['cjs','esm'], // Output format(s)
         target: ['chrome91', 'firefox90', 'edge91', 'safari15', 'ios15', 'opera77'],
-        external: ['react', 'react-dom', 'swiper', 'styled-components'],
+        external: ['react', 'react-dom', '@tanstack/react-router', '@lingui/core', '@lingui/react'],
         injectStyle: false,
     },
 ])
