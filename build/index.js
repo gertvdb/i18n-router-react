@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useEffect } from 'react';
+import { createContext, useContext, useMemo, useEffect, useSyncExternalStore } from 'react';
 import { useRouterState, createRootRoute, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, Outlet } from '@tanstack/react-router';
 import { I18n } from '@lingui/core';
 import { I18nProvider, Trans } from '@lingui/react';
@@ -1120,6 +1120,7 @@ var createRouterCore = /* @__PURE__ */ __name(({
 var _RouteI18n = class _RouteI18n {
   constructor(i18n) {
     this._loaded = /* @__PURE__ */ new Set();
+    this._listeners = /* @__PURE__ */ new Set();
     this._i18n = i18n;
   }
   static new(i18n) {
@@ -1137,12 +1138,20 @@ var _RouteI18n = class _RouteI18n {
   current() {
     return this._i18n.locale;
   }
+  subscribe(listener) {
+    this._listeners.add(listener);
+    return () => this._listeners.delete(listener);
+  }
+  _notify() {
+    this._listeners.forEach((listener) => listener());
+  }
   isLoaded(language) {
     return this._loaded.has(language);
   }
   load(language, messages) {
     this._i18n.load(language, messages);
     this._loaded.add(language);
+    this._notify();
   }
 };
 __name(_RouteI18n, "RouteI18n");
@@ -1715,12 +1724,15 @@ var useRouteRegion = /* @__PURE__ */ __name(() => {
     return null;
   }
 }, "useRouteRegion");
-
-// src/Hooks/useRouteLoading.tsx
 var useRouteLoading = /* @__PURE__ */ __name(() => {
   const i18n = useRouteI18n();
   const language = useRouteLanguage();
-  return !i18n.isLoaded(language);
+  return useSyncExternalStore(
+    (callback) => i18n.subscribe(callback),
+    () => !i18n.isLoaded(language),
+    () => true
+    // default to loading on server
+  );
 }, "useRouteLoading");
 function useRouteParams({ router, route }) {
   const path = useMemo(() => {

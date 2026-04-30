@@ -105,6 +105,7 @@ export interface IRouteI18N {
   t: (key: string, variables?: Record<string, unknown>) => string;
   activate(language: IRouteLanguage): void;
   current(): IRouteLanguage;
+  subscribe(listener: () => void): () => void;
   isLoaded(language: IRouteLanguage): boolean;
   load(language: IRouteLanguage, messages: ITranslations): void;
 }
