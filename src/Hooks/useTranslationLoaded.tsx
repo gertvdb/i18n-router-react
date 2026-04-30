@@ -8,7 +8,7 @@ export const useTranslationLoaded = (): boolean => {
 
   return useSyncExternalStore(
     (callback) => i18n.subscribe(callback),
-    () => !i18n.isLoaded(language),
-    () => true,
+    () => i18n.isLoaded(language),
+    () => false,
   );
 };

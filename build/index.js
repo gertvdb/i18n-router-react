@@ -1796,8 +1796,8 @@ var useTranslationLoaded = /* @__PURE__ */ __name(() => {
   const language = useRouteLanguage();
   return useSyncExternalStore(
     (callback) => i18n.subscribe(callback),
-    () => !i18n.isLoaded(language),
-    () => true
+    () => i18n.isLoaded(language),
+    () => false
   );
 }, "useTranslationLoaded");
 var useRouterBootstrapped = /* @__PURE__ */ __name(() => {
