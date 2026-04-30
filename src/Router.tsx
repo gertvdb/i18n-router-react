@@ -28,13 +28,10 @@ import { RouteI18nContext } from "@/RouteI18nContext";
 import { RouterOutlet } from "@/RouterOutlet";
 import { extractLocale } from "@/Utils/extractLocale";
 import { toCompiledMessages } from "@/Utils/toCompiledMessages";
-import { RouteLoadingContext } from "@/RouteLoadingContext";
 
 export const Router: FC<RouterProps> = (props: RouterProps) => {
   const { config, loadTranslation } = props;
   const { routes, components, entry } = config;
-
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   const rootRoute = createRootRoute({
     component: () => <RouterOutlet />,
@@ -197,7 +194,6 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages as ITranslations);
       linguiI18N.activate(lang);
-      setIsLoaded(true);
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -213,9 +209,7 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
     <RouteI18nContext.Provider value={i18n}>
       <LinguiI18nProvider i18n={linguiI18N}>
         <RouterCoreContext.Provider value={router}>
-          <RouteLoadingContext.Provider value={!isLoaded}>
-            <RouterProvider router={tanstackRouter} />
-          </RouteLoadingContext.Provider>
+          <RouterProvider router={tanstackRouter} />
         </RouterCoreContext.Provider>
       </LinguiI18nProvider>
     </RouteI18nContext.Provider>

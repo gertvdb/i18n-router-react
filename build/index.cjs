@@ -1543,13 +1543,9 @@ function toCompiledMessages(rawMessages) {
   return compiledMessages;
 }
 __name(toCompiledMessages, "toCompiledMessages");
-var RouteLoadingContext = react.createContext(
-  void 0
-);
 var Router = /* @__PURE__ */ __name((props) => {
   const { config, loadTranslation } = props;
   const { routes, components, entry } = config;
-  const [isLoaded, setIsLoaded] = react.useState(false);
   const rootRoute = reactRouter.createRootRoute({
     component: /* @__PURE__ */ __name(() => /* @__PURE__ */ jsxRuntime.jsx(RouterOutlet, {}), "component"),
     notFoundComponent: config.notFoundComponent
@@ -1673,7 +1669,6 @@ var Router = /* @__PURE__ */ __name((props) => {
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages);
       linguiI18N.activate(lang);
-      setIsLoaded(true);
     })();
   }, []);
   react.useEffect(() => {
@@ -1683,8 +1678,11 @@ var Router = /* @__PURE__ */ __name((props) => {
       i18n.load(lang, compiledMessages);
     });
   }, [i18n, loadTranslation, router]);
-  return /* @__PURE__ */ jsxRuntime.jsx(RouteI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsxRuntime.jsx(react$1.I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsxRuntime.jsx(RouterCoreContext.Provider, { value: router, children: /* @__PURE__ */ jsxRuntime.jsx(RouteLoadingContext.Provider, { value: !isLoaded, children: /* @__PURE__ */ jsxRuntime.jsx(reactRouter.RouterProvider, { router: tanstackRouter }) }) }) }) });
+  return /* @__PURE__ */ jsxRuntime.jsx(RouteI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsxRuntime.jsx(react$1.I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsxRuntime.jsx(RouterCoreContext.Provider, { value: router, children: /* @__PURE__ */ jsxRuntime.jsx(reactRouter.RouterProvider, { router: tanstackRouter }) }) }) });
 }, "Router");
+var RouteLoadingContext = react.createContext(
+  void 0
+);
 var useRouter = /* @__PURE__ */ __name(() => {
   const context = react.useContext(RouterCoreContext);
   if (!context) {
@@ -1719,12 +1717,12 @@ var useRouteRegion = /* @__PURE__ */ __name(() => {
     return null;
   }
 }, "useRouteRegion");
+
+// src/Hooks/useRouteLoading.tsx
 var useRouteLoading = /* @__PURE__ */ __name(() => {
-  const context = react.useContext(RouteLoadingContext);
-  if (context === void 0) {
-    throw new Error("useRouteLoading must be used within a <Router> Provider");
-  }
-  return context;
+  const i18n = useRouteI18n();
+  const language = useRouteLanguage();
+  return i18n.isLoaded(language);
 }, "useRouteLoading");
 function useRouteParams({ router, route }) {
   const path = react.useMemo(() => {
