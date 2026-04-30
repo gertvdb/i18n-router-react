@@ -1722,7 +1722,7 @@ var useRouteRegion = /* @__PURE__ */ __name(() => {
 var useRouteLoading = /* @__PURE__ */ __name(() => {
   const i18n = useRouteI18n();
   const language = useRouteLanguage();
-  return i18n.isLoaded(language);
+  return !i18n.isLoaded(language);
 }, "useRouteLoading");
 function useRouteParams({ router, route }) {
   const path = react.useMemo(() => {
