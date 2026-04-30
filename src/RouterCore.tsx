@@ -1,6 +1,7 @@
 import type {
   AbsoluteHrefParams,
   HrefParams,
+  IRoute,
   IRouteId,
   IRouteLanguage,
   IRouteLocale,
@@ -18,10 +19,12 @@ import { extractLanguage } from "@/Utils/extractLanguage";
 export class RouterCore<TRouter extends AnyRouter> implements IRouter {
   private readonly _router: TRouter;
   private readonly _config: IRouterConfig;
+  private readonly _routeMap: Map<IRouteId, IRoute[]>;
 
   constructor(config: IRouterConfig, router: TRouter) {
     this._config = config;
     this._router = router;
+    this._routeMap = this._buildRouteMap(config.routes);
   }
 
   public static new<TRouter extends AnyRouter>(
@@ -189,6 +192,10 @@ export class RouterCore<TRouter extends AnyRouter> implements IRouter {
         return false;
     }*/
 
+  getRouteHierarchy(id: IRouteId): IRoute[] {
+    return this._routeMap.get(id) ?? [];
+  }
+
   hasRoute(id: IRouteId, locale: IRouteLocale) {
     const route = this._route(id, locale);
     return !!route;
@@ -224,6 +231,33 @@ export class RouterCore<TRouter extends AnyRouter> implements IRouter {
     }
 
     return regions;
+  }
+
+  private _buildRouteMap(routes: IRoute[]): Map<IRouteId, IRoute[]> {
+    const routeMap = new Map<IRouteId, IRoute[]>();
+
+    routes.forEach((route) => {
+      const hierarchy: IRoute[] = [route];
+      let currentRoute = route;
+
+      while (currentRoute.parentId) {
+        const parent = routes.find(
+          (r) =>
+            r.id === currentRoute.parentId &&
+            r.language === currentRoute.language,
+        );
+        if (parent) {
+          hierarchy.unshift(parent);
+          currentRoute = parent;
+        } else {
+          break;
+        }
+      }
+
+      routeMap.set(route.id, hierarchy);
+    });
+
+    return routeMap;
   }
 
   private _route(

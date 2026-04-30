@@ -1,13 +1,11 @@
 import type {
   IRoute,
-  IRouteLanguage,
   IRouter,
-  IRouterConfig,
   IRouteRegion,
   ITranslations,
   RouterProps,
 } from "@/Types";
-import { useMemo, type FC, useEffect, useState } from "react";
+import { useMemo, type FC, useEffect } from "react";
 import {
   type AnyRoute,
   createRootRoute,
@@ -194,8 +192,9 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages as ITranslations);
       linguiI18N.activate(lang);
+      i18n.load(lang, compiledMessages as ITranslations);
     })();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [i18n, linguiI18N, loadTranslation, router]);
 
   useEffect(() => {
     router.languages().forEach(async (lang) => {

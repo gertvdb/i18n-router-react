@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useEffect, useSyncExternalStore } from 'react';
+import { createContext, useContext, useMemo, useEffect, useSyncExternalStore, useRef } from 'react';
 import { useRouterState, createRootRoute, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, Outlet } from '@tanstack/react-router';
 import { I18n } from '@lingui/core';
 import { I18nProvider, Trans } from '@lingui/react';
@@ -912,6 +912,7 @@ var _RouterCore = class _RouterCore {
   constructor(config, router) {
     this._config = config;
     this._router = router;
+    this._routeMap = this._buildRouteMap(config.routes);
   }
   static new(config, router) {
     return new _RouterCore(config, router);
@@ -1051,6 +1052,9 @@ var _RouterCore = class _RouterCore {
   
           return false;
       }*/
+  getRouteHierarchy(id) {
+    return this._routeMap.get(id) ?? [];
+  }
   hasRoute(id, locale) {
     const route = this._route(id, locale);
     return !!route;
@@ -1079,6 +1083,26 @@ var _RouterCore = class _RouterCore {
       regions[language] = Array.from(result[language]);
     }
     return regions;
+  }
+  _buildRouteMap(routes) {
+    const routeMap = /* @__PURE__ */ new Map();
+    routes.forEach((route) => {
+      const hierarchy = [route];
+      let currentRoute = route;
+      while (currentRoute.parentId) {
+        const parent = routes.find(
+          (r) => r.id === currentRoute.parentId && r.language === currentRoute.language
+        );
+        if (parent) {
+          hierarchy.unshift(parent);
+          currentRoute = parent;
+        } else {
+          break;
+        }
+      }
+      routeMap.set(route.id, hierarchy);
+    });
+    return routeMap;
   }
   _route(id, localeOrLanguage) {
     const { components, routes } = this._config;
@@ -1676,8 +1700,9 @@ var Router = /* @__PURE__ */ __name((props) => {
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages);
       linguiI18N.activate(lang);
+      i18n.load(lang, compiledMessages);
     })();
-  }, []);
+  }, [i18n, linguiI18N, loadTranslation, router]);
   useEffect(() => {
     router.languages().forEach(async (lang) => {
       const messages = await loadTranslation(lang);
@@ -1687,9 +1712,6 @@ var Router = /* @__PURE__ */ __name((props) => {
   }, [i18n, loadTranslation, router]);
   return /* @__PURE__ */ jsx(RouteI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsx(I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsx(RouterCoreContext.Provider, { value: router, children: /* @__PURE__ */ jsx(RouterProvider, { router: tanstackRouter }) }) }) });
 }, "Router");
-var RouteLoadingContext = createContext(
-  void 0
-);
 var useRouter = /* @__PURE__ */ __name(() => {
   const context = useContext(RouterCoreContext);
   if (!context) {
@@ -1724,16 +1746,6 @@ var useRouteRegion = /* @__PURE__ */ __name(() => {
     return null;
   }
 }, "useRouteRegion");
-var useRouteLoading = /* @__PURE__ */ __name(() => {
-  const i18n = useRouteI18n();
-  const language = useRouteLanguage();
-  return useSyncExternalStore(
-    (callback) => i18n.subscribe(callback),
-    () => !i18n.isLoaded(language),
-    () => true
-    // default to loading on server
-  );
-}, "useRouteLoading");
 function useRouteParams({ router, route }) {
   const path = useMemo(() => {
     return router.path(route.id, route.locale);
@@ -1765,6 +1777,39 @@ function useRouteQuery({ router, route, keys }) {
   }, [fetchedParams, keys]);
 }
 __name(useRouteQuery, "useRouteQuery");
+var useRouteHierarchy = /* @__PURE__ */ __name((id) => {
+  const router = useRouter();
+  return useMemo(() => {
+    return router.getRouteHierarchy(id);
+  }, [id, router]);
+}, "useRouteHierarchy");
+var useRouteIsTransitioning = /* @__PURE__ */ __name(() => {
+  const { isTransitioning } = useRouterState({
+    select: /* @__PURE__ */ __name((state) => ({
+      isTransitioning: state.isTransitioning
+    }), "select")
+  });
+  return isTransitioning;
+}, "useRouteIsTransitioning");
+var useTranslationLoaded = /* @__PURE__ */ __name(() => {
+  const i18n = useRouteI18n();
+  const language = useRouteLanguage();
+  return useSyncExternalStore(
+    (callback) => i18n.subscribe(callback),
+    () => !i18n.isLoaded(language),
+    () => true
+  );
+}, "useTranslationLoaded");
+var useRouterBootstrapped = /* @__PURE__ */ __name(() => {
+  const routerReady = useRouterState({
+    select: /* @__PURE__ */ __name((s) => s.status === "idle", "select")
+  });
+  const bootstrapped = useRef(false);
+  if (!bootstrapped.current && routerReady) {
+    bootstrapped.current = true;
+  }
+  return bootstrapped.current;
+}, "useRouterBootstrapped");
 
 // src/Utils/createRouterConfig.tsx
 var createRouterConfig = /* @__PURE__ */ __name(({
@@ -1781,6 +1826,6 @@ var createRouterConfig = /* @__PURE__ */ __name(({
   };
 }, "createRouterConfig");
 
-export { RouteI18nContext, RouteLoadingContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteLanguage, useRouteLoading, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter };
+export { RouteI18nContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteHierarchy, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useTranslationLoaded };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

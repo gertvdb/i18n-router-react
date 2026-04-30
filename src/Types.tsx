@@ -23,6 +23,7 @@ export interface IRoute {
   language: IRouteLanguage;
   regions: IRouteRegion[];
   path: IRoutePath;
+  parentId?: IRouteId;
 }
 export type IRoutes = IRoute[];
 
@@ -64,7 +65,7 @@ export interface IRouter {
   }: AbsoluteHrefParams): string;
   path(id: IRouteId, locale: IRouteLocale): string;
   path(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
-  //isActive(id: IRouteId, localeOrLanguage: IRouteLocale|IRouteLanguage): boolean;
+  getRouteHierarchy(id: IRouteId): IRoute[];
   hasRoute(id: IRouteId, locale: IRouteLocale): boolean;
   defaultLanguage(): IRouteLanguage;
   languages(): IRouteLanguage[];

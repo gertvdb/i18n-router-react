@@ -20,6 +20,7 @@ interface IRoute {
     language: IRouteLanguage;
     regions: IRouteRegion[];
     path: IRoutePath;
+    parentId?: IRouteId;
 }
 type IRoutes = IRoute[];
 interface IRouteEntry {
@@ -42,6 +43,7 @@ interface IRouter {
     absolute({ baseUrl, id, locale, query, params, hash, }: AbsoluteHrefParams): string;
     path(id: IRouteId, locale: IRouteLocale): string;
     path(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
+    getRouteHierarchy(id: IRouteId): IRoute[];
     hasRoute(id: IRouteId, locale: IRouteLocale): boolean;
     defaultLanguage(): IRouteLanguage;
     languages(): IRouteLanguage[];
@@ -97,8 +99,6 @@ declare const RouterCoreContext: React.Context<IRouter | undefined>;
 
 declare const RouteI18nContext: React.Context<IRouteI18N | undefined>;
 
-declare const RouteLoadingContext: React.Context<boolean | undefined>;
-
 declare const useRouter: () => IRouter;
 
 declare const useRouteI18n: () => IRouteI18N;
@@ -109,11 +109,17 @@ declare const useRouteLocale: () => IRouteLocale;
 
 declare const useRouteRegion: () => IRouteRegion | null;
 
-declare const useRouteLoading: () => boolean;
-
 declare function useRouteParams({ router, route }: RouteParamsProps): any;
 
 declare function useRouteQuery({ router, route, keys }: IRouteQueryProps): any;
+
+declare const useRouteHierarchy: (id: string) => IRoute[];
+
+declare const useRouteIsTransitioning: () => boolean;
+
+declare const useTranslationLoaded: () => boolean;
+
+declare const useRouterBootstrapped: () => boolean;
 
 declare const createRouterConfig: ({ entry, components, routes, notFoundComponent, }: {
     entry: IRouteEntry;
@@ -135,4 +141,4 @@ declare const toLocale: ({ language, region, }: {
     region: IRouteRegion;
 }) => IRouteLocale;
 
-export { type AbsoluteHrefParams, type HrefParams, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteEntry, type IRouteI18N, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRegion, type IRouter, type IRouterConfig, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, RouteI18nContext, RouteLoadingContext, type RouteParamsProps, Router, RouterCoreContext, type RouterProps, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteLanguage, useRouteLoading, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter };
+export { type AbsoluteHrefParams, type HrefParams, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteEntry, type IRouteI18N, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRegion, type IRouter, type IRouterConfig, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, RouteI18nContext, type RouteParamsProps, Router, RouterCoreContext, type RouterProps, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteHierarchy, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useTranslationLoaded };
