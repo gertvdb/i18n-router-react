@@ -13,9 +13,9 @@ export interface IRouteComponent {
 }
 export type IRouteComponents = Record<IRouteId, IRouteComponent>;
 
-export interface IRouteTo {
+export interface ILocaleRoute {
   id: IRouteId;
-  localeOrLanguage: IRouteLocale;
+  locale: IRouteLocale;
 }
 
 export interface IRoute {
@@ -75,7 +75,7 @@ export type NavigateMethod = "replace" | "push";
 export type NavigateTarget = "_blank" | "_self";
 
 export type NavigateParams<T> = {
-  to: IRouteTo;
+  to: IRouteEntry;
   from?: string;
   query?: Record<string, unknown>;
   params?: Record<string, unknown>;
@@ -116,4 +116,13 @@ export interface RouterProps {
   loadTranslation(
     language: IRouteLanguage,
   ): ITranslations | Promise<ITranslations>;
+}
+
+export interface RouteParamsProps {
+  router: IRouter;
+  route: ILocaleRoute;
+}
+
+export interface IRouteQueryProps extends RouteParamsProps {
+  keys?: string[];
 }
