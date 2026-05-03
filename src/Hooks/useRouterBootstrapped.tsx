@@ -1,16 +1,10 @@
 import { useRouterState } from "@tanstack/react-router";
-import { useRef } from "react";
+import { useRouter } from "@/Hooks/useRouter";
 
 export const useRouterBootstrapped = (): boolean => {
-  const routerReady = useRouterState({
-    select: (s) => s.status === "idle",
+  const router = useRouter();
+
+  return useRouterState({
+    select: () => router.isBootstrapped(),
   });
-
-  const bootstrapped = useRef(false);
-
-  if (!bootstrapped.current && routerReady) {
-    bootstrapped.current = true;
-  }
-
-  return bootstrapped.current;
 };

@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useEffect, useSyncExternalStore, useRef } from 'react';
+import { createContext, useContext, useMemo, useEffect, useSyncExternalStore } from 'react';
 import { useRouterState, createRootRoute, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, Outlet } from '@tanstack/react-router';
 import { I18n } from '@lingui/core';
 import { I18nProvider, Trans } from '@lingui/react';
@@ -910,6 +910,7 @@ var extractLanguage = /* @__PURE__ */ __name(({
 // src/RouterCore.tsx
 var _RouterCore = class _RouterCore {
   constructor(config, router) {
+    this._isBootstrapped = false;
     this._config = config;
     this._router = router;
     this._routeMap = this._buildRouteMap(config.routes);
@@ -1083,6 +1084,15 @@ var _RouterCore = class _RouterCore {
       regions[language] = Array.from(result[language]);
     }
     return regions;
+  }
+  isBootstrapped() {
+    if (this._isBootstrapped) {
+      return true;
+    }
+    if (this._router.state.status === "idle") {
+      this._isBootstrapped = true;
+    }
+    return this._isBootstrapped;
   }
   _buildRouteMap(routes) {
     const routeMap = /* @__PURE__ */ new Map();
@@ -1801,14 +1811,10 @@ var useTranslationLoaded = /* @__PURE__ */ __name(() => {
   );
 }, "useTranslationLoaded");
 var useRouterBootstrapped = /* @__PURE__ */ __name(() => {
-  const routerReady = useRouterState({
-    select: /* @__PURE__ */ __name((s) => s.status === "idle", "select")
+  const router = useRouter();
+  return useRouterState({
+    select: /* @__PURE__ */ __name(() => router.isBootstrapped(), "select")
   });
-  const bootstrapped = useRef(false);
-  if (!bootstrapped.current && routerReady) {
-    bootstrapped.current = true;
-  }
-  return bootstrapped.current;
 }, "useRouterBootstrapped");
 
 // src/Utils/createRouterConfig.tsx

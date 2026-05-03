@@ -20,6 +20,7 @@ export class RouterCore<TRouter extends AnyRouter> implements IRouter {
   private readonly _router: TRouter;
   private readonly _config: IRouterConfig;
   private readonly _routeMap: Map<IRouteId, IRoute[]>;
+  private _isBootstrapped: boolean = false;
 
   constructor(config: IRouterConfig, router: TRouter) {
     this._config = config;
@@ -231,6 +232,18 @@ export class RouterCore<TRouter extends AnyRouter> implements IRouter {
     }
 
     return regions;
+  }
+
+  isBootstrapped(): boolean {
+    if (this._isBootstrapped) {
+      return true;
+    }
+
+    if (this._router.state.status === "idle") {
+      this._isBootstrapped = true;
+    }
+
+    return this._isBootstrapped;
   }
 
   private _buildRouteMap(routes: IRoute[]): Map<IRouteId, IRoute[]> {

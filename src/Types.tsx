@@ -70,6 +70,7 @@ export interface IRouter {
   defaultLanguage(): IRouteLanguage;
   languages(): IRouteLanguage[];
   regionsByLanguage(): Record<IRouteLanguage, IRouteRegion[]>;
+  isBootstrapped(): boolean;
 }
 
 export type NavigateMethod = "replace" | "push";

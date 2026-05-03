@@ -48,6 +48,7 @@ interface IRouter {
     defaultLanguage(): IRouteLanguage;
     languages(): IRouteLanguage[];
     regionsByLanguage(): Record<IRouteLanguage, IRouteRegion[]>;
+    isBootstrapped(): boolean;
 }
 type NavigateMethod = "replace" | "push";
 type NavigateTarget = "_blank" | "_self";
