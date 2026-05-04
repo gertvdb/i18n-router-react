@@ -8,7 +8,7 @@ import {
 import { useMemo, type FC, useEffect } from "react";
 import {
   type AnyRoute,
-  createRootRoute,
+  createRootRouteWithContext,
   createRoute,
   createRouter,
   redirect,
@@ -32,10 +32,15 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
 
   const { routes, components, entryRoute } = config;
 
-  const rootRoute = createRootRoute({
-    component: () => <RouterOutlet />,
-    notFoundComponent: config.notFoundComponent,
-  });
+  const rootRoute = useMemo(
+    () =>
+      createRootRouteWithContext<Record<string, unknown>>()({
+        component: () => <RouterOutlet />,
+        notFoundComponent: config.notFoundComponent,
+        errorComponent: config.errorComponent,
+      }),
+    [config.notFoundComponent, config.errorComponent],
+  );
 
   const linguiI18N = useMemo(
     () =>
@@ -53,112 +58,119 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
     [linguiI18N],
   );
 
-  const routeChildren: AnyRoute[] = [];
-  const languageFirstRegion: Record<string, string> = {};
+  const routeChildren: AnyRoute[] = useMemo(() => {
+    const children: AnyRoute[] = [];
+    const languageFirstRegion: Record<string, string> = {};
 
-  const entry = routes.find(
-    (route: { id: any; language: string }) =>
-      route.id === entryRoute.id &&
-      route.language ===
-        extractLanguage({ locale: entryRoute.localeOrLanguage }),
-  );
-
-  if (entry) {
-    const redirectTo = createSafeRouterPath({
-      localeOrLanguage: entryRoute.localeOrLanguage,
-      path: entry.path,
-    });
-
-    // Entry Route
-    routeChildren.push(
-      createRoute({
-        getParentRoute: () => rootRoute,
-        path: "/",
-        loader: async () => {
-          throw redirect({ to: redirectTo });
-        },
-      }) as AnyRoute,
+    const entry = routes.find(
+      (route: { id: any; language: string }) =>
+        route.id === entryRoute.id &&
+        route.language ===
+          extractLanguage({ locale: entryRoute.localeOrLanguage }),
     );
-  }
 
-  // Other Routes
-  routes.forEach((route: IRoute) => {
-    if (!languageFirstRegion[route.language] && route.regions.length > 0) {
-      languageFirstRegion[route.language] = route.regions[0];
-    }
+    if (entry) {
+      const redirectTo = createSafeRouterPath({
+        localeOrLanguage: entryRoute.localeOrLanguage,
+        path: entry.path,
+      });
 
-    const routeConfig = components[route.id];
-    if (!routeConfig) {
-      return; // Skip this route if no configuration is found.
-    }
-
-    const regions = route.regions;
-    if (regions.length === 0) {
-      throw new Error(
-        "IRoutes config for route: " +
-          route.id +
-          " - " +
-          route.language +
-          " must at least contain one region",
-      );
-    }
-
-    regions.forEach((region: IRouteRegion) => {
-      const locale = toLocale({ language: route.language, region: region });
-
-      routeChildren.push(
+      // Entry Route
+      children.push(
         createRoute({
           getParentRoute: () => rootRoute,
-          path: createSafeRouterPath({
-            localeOrLanguage: locale,
-            path: route.path,
-          }),
-          component: routeConfig.component,
-          beforeLoad: ({ context }) => {
-            if (routeConfig.beforeLoad) {
-              routeConfig.beforeLoad(context, route.language, region);
-            }
-          },
-          loader: async ({ params, context }) => {
-            if (routeConfig.loader) {
-              routeConfig.loader(params, context, route.language, region);
-            }
+          path: "/",
+          loader: async () => {
+            throw redirect({ to: redirectTo });
           },
         }) as AnyRoute,
       );
-    });
+    }
 
-    // Redirect from /language/path to /language-firstRegion/path
-    const firstRegion = languageFirstRegion[route.language];
-    if (firstRegion) {
-      const firstLocale = toLocale({
-        language: route.language,
-        region: firstRegion,
-      });
-      const languagePath =
-        "/" +
-        route.language.toLowerCase() +
-        (route.path === "/" ? "" : route.path.toLowerCase());
-      const targetPath = createSafeRouterPath({
-        localeOrLanguage: firstLocale,
-        path: route.path,
-      });
+    // Other Routes
+    routes.forEach((route: IRoute) => {
+      if (!languageFirstRegion[route.language] && route.regions.length > 0) {
+        languageFirstRegion[route.language] = route.regions[0];
+      }
 
-      if (languagePath !== targetPath) {
-        routeChildren.push(
+      const routeConfig = components[route.id];
+      if (!routeConfig) {
+        return; // Skip this route if no configuration is found.
+      }
+
+      const regions = route.regions;
+      if (regions.length === 0) {
+        throw new Error(
+          "IRoutes config for route: " +
+            route.id +
+            " - " +
+            route.language +
+            " must at least contain one region",
+        );
+      }
+
+      regions.forEach((region: IRouteRegion) => {
+        const locale = toLocale({ language: route.language, region: region });
+
+        children.push(
           createRoute({
             getParentRoute: () => rootRoute,
-            path: languagePath,
-            loader: async () => {
-              throw redirect({ to: targetPath });
+            path: createSafeRouterPath({
+              localeOrLanguage: locale,
+              path: route.path,
+            }),
+            component: routeConfig.component,
+            beforeLoad: ({ context }) => {
+              if (routeConfig.beforeLoad) {
+                routeConfig.beforeLoad(context, route.language, region);
+              }
+            },
+            loader: async ({ params, context }) => {
+              if (routeConfig.loader) {
+                routeConfig.loader(params, context, route.language, region);
+              }
             },
           }) as AnyRoute,
         );
-      }
-    }
-  });
+      });
 
-  const routeTree = rootRoute.addChildren(routeChildren);
+      // Redirect from /language/path to /language-firstRegion/path
+      const firstRegion = languageFirstRegion[route.language];
+      if (firstRegion) {
+        const firstLocale = toLocale({
+          language: route.language,
+          region: firstRegion,
+        });
+        const languagePath =
+          "/" +
+          route.language.toLowerCase() +
+          (route.path === "/" ? "" : route.path.toLowerCase());
+        const targetPath = createSafeRouterPath({
+          localeOrLanguage: firstLocale,
+          path: route.path,
+        });
+
+        if (languagePath !== targetPath) {
+          children.push(
+            createRoute({
+              getParentRoute: () => rootRoute,
+              path: languagePath,
+              loader: async () => {
+                throw redirect({ to: targetPath });
+              },
+            }) as AnyRoute,
+          );
+        }
+      }
+    });
+
+    return children;
+  }, [rootRoute, routes, components, entryRoute]);
+
+  const routeTree = useMemo(
+    () => rootRoute.addChildren(routeChildren),
+    [rootRoute, routeChildren],
+  );
 
   const tanstackRouter = useMemo(
     () =>
@@ -169,7 +181,7 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
         defaultErrorComponent: config.errorComponent,
         context: context,
       }),
-    [routeTree, config.notFoundComponent],
+    [routeTree, config.notFoundComponent, config.errorComponent, context],
   );
 
   const router: IRouter = useMemo(
