@@ -95,18 +95,20 @@ interface RouterProps<TContext = Record<string, unknown>> {
     config: IRouterConfig<TContext>;
     translations(language: IRouteLanguage): ITranslations | Promise<ITranslations>;
 }
-interface RouteParamsProps {
+interface RouteParamsProps<T> {
     router: IRouter;
     route: ILocaleRoute;
-    select?: ((match: any) => any) | undefined;
+    select?: ((match: T) => T) | undefined;
 }
-interface RouteLoaderDataProps {
+interface RouteLoaderDataProps<T> {
     router: IRouter;
     route: ILocaleRoute;
-    select?: ((match: any) => any) | undefined;
+    select?: ((match: T) => T) | undefined;
 }
-interface IRouteQueryProps extends RouteParamsProps {
-    select?: ((match: any) => any) | undefined;
+interface IRouteQueryProps<T> {
+    router: IRouter;
+    route: ILocaleRoute;
+    select?: ((match: T) => T) | undefined;
 }
 
 declare const Router: <TContext extends Record<string, unknown>>(props: RouterProps<TContext>) => react_jsx_runtime.JSX.Element;
@@ -125,11 +127,11 @@ declare const useRouteLocale: () => IRouteLocale;
 
 declare const useRouteRegion: () => IRouteRegion | null;
 
-declare function useRouteParams({ router, route, select, }: RouteParamsProps): any;
+declare function useRouteParams<T>({ router, route, select, }: RouteParamsProps<T>): any;
 
-declare function useRouteQuery({ router, route, select, }: IRouteQueryProps): any;
+declare function useRouteQuery<T>({ router, route, select, }: IRouteQueryProps<T>): any;
 
-declare function useRouteLoaderData({ router, route, select, }: RouteLoaderDataProps): any;
+declare function useRouteLoaderData<T>({ router, route, select, }: RouteLoaderDataProps<T>): any;
 
 declare const useRouteHierarchy: (id: string) => IRoute[];
 
