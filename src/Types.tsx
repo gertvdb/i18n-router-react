@@ -145,20 +145,20 @@ export interface RouterProps<TContext = Record<string, unknown>> {
   ): ITranslations | Promise<ITranslations>;
 }
 
-export interface RouteParamsProps<T> {
+export interface RouteParamsProps<T, TSelected = T> {
   router: IRouter;
   route: ILocaleRoute;
-  select?: ((match: T) => T) | undefined;
+  select?: (match: T) => TSelected;
 }
 
-export interface RouteLoaderDataProps<T> {
+export interface RouteLoaderDataProps<T, TSelected = T> {
   router: IRouter;
   route: ILocaleRoute;
-  select?: ((match: T) => T) | undefined;
+  select?: (match: T) => TSelected;
 }
 
-export interface IRouteQueryProps<T> {
+export interface IRouteQueryProps<T, TSelected = T> {
   router: IRouter;
   route: ILocaleRoute;
-  select?: ((match: T) => T) | undefined;
+  select?: (match: T) => TSelected;
 }
