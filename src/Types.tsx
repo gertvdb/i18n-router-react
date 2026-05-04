@@ -148,13 +148,15 @@ export interface RouterProps<TContext = Record<string, unknown>> {
 export interface RouteParamsProps {
   router: IRouter;
   route: ILocaleRoute;
+  select?: ((match: any) => any) | undefined;
 }
 
 export interface RouteLoaderDataProps {
   router: IRouter;
   route: ILocaleRoute;
+  select?: ((match: any) => any) | undefined;
 }
 
 export interface IRouteQueryProps extends RouteParamsProps {
-  keys?: string[];
+  select?: ((match: any) => any) | undefined;
 }

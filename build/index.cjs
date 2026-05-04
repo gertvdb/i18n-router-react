@@ -1773,37 +1773,39 @@ var useRouteRegion = /* @__PURE__ */ __name(() => {
     return null;
   }
 }, "useRouteRegion");
-function useRouteParams({ router, route }) {
+function useRouteParams({
+  router,
+  route,
+  select
+}) {
   const path = react.useMemo(() => {
     return router.path(route.id, route.locale);
   }, [route.id, route.locale, router]);
-  return reactRouter.useParams({ from: path });
+  return reactRouter.useParams({ from: path, select });
 }
 __name(useRouteParams, "useRouteParams");
-
-// src/Utils/pickKeys.tsx
-function pickKeys(obj, keys) {
-  const picked = {};
-  keys.forEach((key) => {
-    if (key in obj) {
-      picked[key] = obj[key];
-    }
-  });
-  return picked;
-}
-__name(pickKeys, "pickKeys");
-
-// src/Hooks/useRouteQuery.tsx
-function useRouteQuery({ router, route, keys }) {
+function useRouteQuery({
+  router,
+  route,
+  select
+}) {
   const path = react.useMemo(() => {
     return router.path(route.id, route.locale);
   }, [route.id, route.locale, router]);
-  const fetchedParams = reactRouter.useSearch({ from: path });
-  return react.useMemo(() => {
-    return keys ? pickKeys(fetchedParams, keys) : fetchedParams;
-  }, [fetchedParams, keys]);
+  return reactRouter.useSearch({ from: path, select });
 }
 __name(useRouteQuery, "useRouteQuery");
+function useRouteLoaderData({
+  router,
+  route,
+  select
+}) {
+  const path = react.useMemo(() => {
+    return router.path(route.id, route.locale);
+  }, [route.id, route.locale, router]);
+  return reactRouter.useLoaderData({ from: path, select });
+}
+__name(useRouteLoaderData, "useRouteLoaderData");
 var useRouteHierarchy = /* @__PURE__ */ __name((id) => {
   const router = useRouter();
   return react.useMemo(() => {
@@ -1862,6 +1864,7 @@ exports.useRouteHierarchy = useRouteHierarchy;
 exports.useRouteI18n = useRouteI18n;
 exports.useRouteIsTransitioning = useRouteIsTransitioning;
 exports.useRouteLanguage = useRouteLanguage;
+exports.useRouteLoaderData = useRouteLoaderData;
 exports.useRouteLocale = useRouteLocale;
 exports.useRouteParams = useRouteParams;
 exports.useRouteQuery = useRouteQuery;

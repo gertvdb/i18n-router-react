@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useEffect, useSyncExternalStore } from 'react';
-import { useRouterState, createRootRouteWithContext, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, Outlet } from '@tanstack/react-router';
+import { useRouterState, createRootRouteWithContext, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, useLoaderData, Outlet } from '@tanstack/react-router';
 import { I18n } from '@lingui/core';
 import { I18nProvider, Trans } from '@lingui/react';
 import { jsx } from 'react/jsx-runtime';
@@ -1771,37 +1771,39 @@ var useRouteRegion = /* @__PURE__ */ __name(() => {
     return null;
   }
 }, "useRouteRegion");
-function useRouteParams({ router, route }) {
+function useRouteParams({
+  router,
+  route,
+  select
+}) {
   const path = useMemo(() => {
     return router.path(route.id, route.locale);
   }, [route.id, route.locale, router]);
-  return useParams({ from: path });
+  return useParams({ from: path, select });
 }
 __name(useRouteParams, "useRouteParams");
-
-// src/Utils/pickKeys.tsx
-function pickKeys(obj, keys) {
-  const picked = {};
-  keys.forEach((key) => {
-    if (key in obj) {
-      picked[key] = obj[key];
-    }
-  });
-  return picked;
-}
-__name(pickKeys, "pickKeys");
-
-// src/Hooks/useRouteQuery.tsx
-function useRouteQuery({ router, route, keys }) {
+function useRouteQuery({
+  router,
+  route,
+  select
+}) {
   const path = useMemo(() => {
     return router.path(route.id, route.locale);
   }, [route.id, route.locale, router]);
-  const fetchedParams = useSearch({ from: path });
-  return useMemo(() => {
-    return keys ? pickKeys(fetchedParams, keys) : fetchedParams;
-  }, [fetchedParams, keys]);
+  return useSearch({ from: path, select });
 }
 __name(useRouteQuery, "useRouteQuery");
+function useRouteLoaderData({
+  router,
+  route,
+  select
+}) {
+  const path = useMemo(() => {
+    return router.path(route.id, route.locale);
+  }, [route.id, route.locale, router]);
+  return useLoaderData({ from: path, select });
+}
+__name(useRouteLoaderData, "useRouteLoaderData");
 var useRouteHierarchy = /* @__PURE__ */ __name((id) => {
   const router = useRouter();
   return useMemo(() => {
@@ -1849,6 +1851,6 @@ var createRouterConfig = /* @__PURE__ */ __name(({
   };
 }, "createRouterConfig");
 
-export { RouteI18nContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteHierarchy, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useTranslationLoaded };
+export { RouteI18nContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteHierarchy, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useTranslationLoaded };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map
