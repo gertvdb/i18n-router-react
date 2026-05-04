@@ -130,7 +130,12 @@ export const Router = <TContext extends Record<string, unknown>>(
             },
             loader: async ({ params, context }) => {
               if (routeConfig.loader) {
-                routeConfig.loader(params, { context }, route.language, region);
+                return routeConfig.loader(
+                  params,
+                  { context },
+                  route.language,
+                  region,
+                );
               }
             },
           }) as AnyRoute,

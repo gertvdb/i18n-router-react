@@ -1663,7 +1663,12 @@ var Router = /* @__PURE__ */ __name((props) => {
             }, "beforeLoad"),
             loader: /* @__PURE__ */ __name(async ({ params, context: context2 }) => {
               if (routeConfig.loader) {
-                routeConfig.loader(params, { context: context2 }, route.language, region);
+                return routeConfig.loader(
+                  params,
+                  { context: context2 },
+                  route.language,
+                  region
+                );
               }
             }, "loader")
           })
