@@ -16,22 +16,25 @@ import { toLocale } from "@/Utils/toLocale";
 import { createSafeRouterPath } from "@/Utils/createSafeRouterPath";
 import { extractLanguage } from "@/Utils/extractLanguage";
 
-export class RouterCore<TRouter extends AnyRouter> implements IRouter {
+export class RouterCore<
+  TContext extends Record<string, unknown>,
+  TRouter extends AnyRouter,
+> implements IRouter {
   private readonly _router: TRouter;
-  private readonly _config: IRouterConfig;
+  private readonly _config: IRouterConfig<TContext>;
   private readonly _routeMap: Map<IRouteId, IRoute[]>;
   private _isBootstrapped: boolean = false;
 
-  constructor(config: IRouterConfig, router: TRouter) {
+  constructor(config: IRouterConfig<TContext>, router: TRouter) {
     this._config = config;
     this._router = router;
     this._routeMap = this._buildRouteMap(config.routes);
   }
 
-  public static new<TRouter extends AnyRouter>(
-    config: IRouterConfig,
-    router: TRouter,
-  ) {
+  public static new<
+    TContext extends Record<string, unknown>,
+    TRouter extends AnyRouter,
+  >(config: IRouterConfig<TContext>, router: TRouter) {
     return new RouterCore(config, router);
   }
 

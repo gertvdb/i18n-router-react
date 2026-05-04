@@ -1,5 +1,6 @@
+import * as react_jsx_runtime from 'react/jsx-runtime';
 import * as React from 'react';
-import React__default, { FC } from 'react';
+import React__default from 'react';
 import { NotFoundRouteProps, ErrorComponentProps } from '@tanstack/react-router';
 
 type IRouteId = string;
@@ -7,12 +8,16 @@ type IRouteLocale = string;
 type IRouteRegion = string;
 type IRouteLanguage = string;
 type IRoutePath = string;
-interface IRouteComponent<TLoaderData = any, TRouteContext = any> {
+interface IRouteComponent<TLoaderData = any, TRouteContext = any, TContext = any> {
     component: () => React__default.ReactNode;
-    beforeLoad?: (context: any, language: IRouteLanguage, region: IRouteRegion) => Promise<TRouteContext> | TRouteContext | void;
-    loader?: (params: any, context: any, language: IRouteLanguage, region: IRouteRegion) => Promise<TLoaderData> | TLoaderData;
+    beforeLoad?: (opts: {
+        context: TContext;
+    }, language: IRouteLanguage, region: IRouteRegion) => Promise<TRouteContext> | TRouteContext | void;
+    loader?: (params: any, opts: {
+        context: TContext;
+    }, language: IRouteLanguage, region: IRouteRegion) => Promise<TLoaderData> | TLoaderData;
 }
-type IRouteComponents = Record<IRouteId, IRouteComponent<any>>;
+type IRouteComponents<TContext = any> = Record<IRouteId, IRouteComponent<any, any, TContext>>;
 interface ILocaleRoute {
     id: IRouteId;
     locale: IRouteLocale;
@@ -29,8 +34,8 @@ interface IRouteEntry {
     id: IRouteId;
     localeOrLanguage: IRouteLanguage | IRouteLocale;
 }
-interface IRouterConfig {
-    components: IRouteComponents;
+interface IRouterConfig<TContext = any> {
+    components: IRouteComponents<TContext>;
     routes: IRoutes;
     entryRoute: IRouteEntry;
     notFoundComponent: (props: NotFoundRouteProps) => React__default.ReactNode;
@@ -85,9 +90,9 @@ interface IRouteI18N {
     load(language: IRouteLanguage, messages: ITranslations): void;
 }
 type ITranslations = Record<string, string>;
-interface RouterProps {
-    context: Record<string, unknown>;
-    config: IRouterConfig;
+interface RouterProps<TContext = Record<string, unknown>> {
+    context: TContext;
+    config: IRouterConfig<TContext>;
     translations(language: IRouteLanguage): ITranslations | Promise<ITranslations>;
 }
 interface RouteParamsProps {
@@ -102,7 +107,7 @@ interface IRouteQueryProps extends RouteParamsProps {
     keys?: string[];
 }
 
-declare const Router: FC<RouterProps>;
+declare const Router: <TContext extends Record<string, unknown>>(props: RouterProps<TContext>) => react_jsx_runtime.JSX.Element;
 
 declare const RouterCoreContext: React.Context<IRouter | undefined>;
 

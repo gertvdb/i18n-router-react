@@ -1593,9 +1593,10 @@ var Router = /* @__PURE__ */ __name((props) => {
     () => reactRouter.createRootRouteWithContext()({
       component: /* @__PURE__ */ __name(() => /* @__PURE__ */ jsxRuntime.jsx(RouterOutlet, {}), "component"),
       notFoundComponent: config.notFoundComponent,
-      errorComponent: config.errorComponent
+      errorComponent: config.errorComponent,
+      context: /* @__PURE__ */ __name(() => context, "context")
     }),
-    [config.notFoundComponent, config.errorComponent]
+    [config.notFoundComponent, config.errorComponent, context]
   );
   const linguiI18N = react.useMemo(
     () => new core.I18n({
@@ -1657,12 +1658,12 @@ var Router = /* @__PURE__ */ __name((props) => {
             component: routeConfig.component,
             beforeLoad: /* @__PURE__ */ __name(({ context: context2 }) => {
               if (routeConfig.beforeLoad) {
-                routeConfig.beforeLoad(context2, route.language, region);
+                routeConfig.beforeLoad({ context: context2 }, route.language, region);
               }
             }, "beforeLoad"),
             loader: /* @__PURE__ */ __name(async ({ params, context: context2 }) => {
               if (routeConfig.loader) {
-                routeConfig.loader(params, context2, route.language, region);
+                routeConfig.loader(params, { context: context2 }, route.language, region);
               }
             }, "loader")
           })

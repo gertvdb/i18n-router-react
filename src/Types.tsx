@@ -11,22 +11,29 @@ export type IRouteLanguage = string; // nl, fr
 
 export type IRoutePath = string;
 
-export interface IRouteComponent<TLoaderData = any, TRouteContext = any> {
+export interface IRouteComponent<
+  TLoaderData = any,
+  TRouteContext = any,
+  TContext = any,
+> {
   component: () => React.ReactNode;
   beforeLoad?: (
-    context: any,
+    opts: { context: TContext },
     language: IRouteLanguage,
     region: IRouteRegion,
   ) => Promise<TRouteContext> | TRouteContext | void;
   loader?: (
     params: any,
-    context: any,
+    opts: { context: TContext },
     language: IRouteLanguage,
     region: IRouteRegion,
   ) => Promise<TLoaderData> | TLoaderData;
 }
 
-export type IRouteComponents = Record<IRouteId, IRouteComponent<any>>;
+export type IRouteComponents<TContext = any> = Record<
+  IRouteId,
+  IRouteComponent<any, any, TContext>
+>;
 
 export interface ILocaleRoute {
   id: IRouteId;
@@ -47,8 +54,8 @@ export interface IRouteEntry {
   localeOrLanguage: IRouteLanguage | IRouteLocale;
 }
 
-export interface IRouterConfig {
-  components: IRouteComponents;
+export interface IRouterConfig<TContext = any> {
+  components: IRouteComponents<TContext>;
   routes: IRoutes;
   entryRoute: IRouteEntry;
   notFoundComponent: (props: NotFoundRouteProps) => React.ReactNode;
@@ -130,9 +137,9 @@ export interface IRouteI18N {
 
 export type ITranslations = Record<string, string>;
 
-export interface RouterProps {
-  context: Record<string, unknown>;
-  config: IRouterConfig;
+export interface RouterProps<TContext = Record<string, unknown>> {
+  context: TContext;
+  config: IRouterConfig<TContext>;
   translations(
     language: IRouteLanguage,
   ): ITranslations | Promise<ITranslations>;

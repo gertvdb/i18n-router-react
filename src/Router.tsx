@@ -27,19 +27,22 @@ import { RouterOutlet } from "@/RouterOutlet";
 import { extractLocale } from "@/Utils/extractLocale";
 import { toCompiledMessages } from "@/Utils/toCompiledMessages";
 
-export const Router: FC<RouterProps> = (props: RouterProps) => {
+export const Router = <TContext extends Record<string, unknown>>(
+  props: RouterProps<TContext>,
+) => {
   const { config, translations, context } = props;
 
   const { routes, components, entryRoute } = config;
 
   const rootRoute = useMemo(
     () =>
-      createRootRouteWithContext<Record<string, unknown>>()({
+      createRootRouteWithContext<TContext>()({
         component: () => <RouterOutlet />,
         notFoundComponent: config.notFoundComponent,
         errorComponent: config.errorComponent,
+        context: () => context,
       }),
-    [config.notFoundComponent, config.errorComponent],
+    [config.notFoundComponent, config.errorComponent, context],
   );
 
   const linguiI18N = useMemo(
@@ -122,12 +125,12 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
             component: routeConfig.component,
             beforeLoad: ({ context }) => {
               if (routeConfig.beforeLoad) {
-                routeConfig.beforeLoad(context, route.language, region);
+                routeConfig.beforeLoad({ context }, route.language, region);
               }
             },
             loader: async ({ params, context }) => {
               if (routeConfig.loader) {
-                routeConfig.loader(params, context, route.language, region);
+                routeConfig.loader(params, { context }, route.language, region);
               }
             },
           }) as AnyRoute,
@@ -186,7 +189,7 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
 
   const router: IRouter = useMemo(
     () =>
-      createRouterCore({
+      createRouterCore<TContext, typeof tanstackRouter>({
         config: config,
         router: tanstackRouter,
       }),
