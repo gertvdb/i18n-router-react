@@ -33,7 +33,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 
 // node_modules/moo/moo.js
 var require_moo = __commonJS({
-  "node_modules/moo/moo.js"(exports$1, module) {
+  "node_modules/moo/moo.js"(exports, module) {
     (function(root, factory) {
       if (typeof define === "function" && define.amd) {
         define([], factory);
@@ -42,7 +42,7 @@ var require_moo = __commonJS({
       } else {
         root.moo = factory();
       }
-    })(exports$1, function() {
+    })(exports, function() {
       var hasOwnProperty = Object.prototype.hasOwnProperty;
       var toString = Object.prototype.toString;
       var hasSticky = typeof new RegExp().sticky === "boolean";
@@ -588,14 +588,14 @@ var require_moo = __commonJS({
 
 // node_modules/@messageformat/parser/lib/lexer.js
 var require_lexer = __commonJS({
-  "node_modules/@messageformat/parser/lib/lexer.js"(exports$1) {
-    var __importDefault = exports$1 && exports$1.__importDefault || function(mod) {
+  "node_modules/@messageformat/parser/lib/lexer.js"(exports) {
+    var __importDefault = exports && exports.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
     };
-    Object.defineProperty(exports$1, "__esModule", { value: true });
-    exports$1.lexer = exports$1.states = void 0;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.lexer = exports.states = void 0;
     var moo_1 = __importDefault(require_moo());
-    exports$1.states = {
+    exports.states = {
       body: {
         doubleapos: { match: "''", value: /* @__PURE__ */ __name(() => "'", "value") },
         quoted: {
@@ -648,16 +648,16 @@ var require_lexer = __commonJS({
         end: { match: /\s*\}/u, pop: 1 }
       }
     };
-    exports$1.lexer = moo_1.default.states(exports$1.states);
+    exports.lexer = moo_1.default.states(exports.states);
   }
 });
 
 // node_modules/@messageformat/parser/lib/parser.js
 var require_parser = __commonJS({
-  "node_modules/@messageformat/parser/lib/parser.js"(exports$1) {
-    Object.defineProperty(exports$1, "__esModule", { value: true });
-    exports$1.ParseError = void 0;
-    exports$1.parse = parse2;
+  "node_modules/@messageformat/parser/lib/parser.js"(exports) {
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ParseError = void 0;
+    exports.parse = parse2;
     var lexer_js_1 = require_lexer();
     var getContext = /* @__PURE__ */ __name((lt) => ({
       offset: lt.offset,
@@ -711,7 +711,7 @@ var require_parser = __commonJS({
     };
     __name(_ParseError, "ParseError");
     var ParseError = _ParseError;
-    exports$1.ParseError = ParseError;
+    exports.ParseError = ParseError;
     var _Parser = class _Parser {
       constructor(src, opt) {
         var _a, _b, _c, _d;
@@ -1062,7 +1062,7 @@ var _RouterCore = class _RouterCore {
   }
   defaultLanguage() {
     return extractLanguage({
-      locale: this._config.entry.localeOrLanguage
+      locale: this._config.entryRoute.localeOrLanguage
     });
   }
   languages() {
@@ -1585,21 +1585,34 @@ function toCompiledMessages(rawMessages) {
 }
 __name(toCompiledMessages, "toCompiledMessages");
 var Router = /* @__PURE__ */ __name((props) => {
-  const { config, loadTranslation } = props;
-  const { routes, components, entry } = config;
+  const { config, translations, context } = props;
+  const { routes, components, entryRoute } = config;
   const rootRoute = createRootRoute({
     component: /* @__PURE__ */ __name(() => /* @__PURE__ */ jsx(RouterOutlet, {}), "component"),
     notFoundComponent: config.notFoundComponent
   });
+  const linguiI18N = useMemo(
+    () => new I18n({
+      missing: /* @__PURE__ */ __name((locale, key) => {
+        console.warn(`MISSING TRANSLATION: ${key} in ${locale}`);
+        return "";
+      }, "missing")
+    }),
+    []
+  );
+  const i18n = useMemo(
+    () => createRouteI18n({ i18n: linguiI18N }),
+    [linguiI18N]
+  );
   const routeChildren = [];
   const languageFirstRegion = {};
-  const entryRoute = routes.find(
-    (route) => route.id === entry.id && route.language === extractLanguage({ locale: entry.localeOrLanguage })
+  const entry = routes.find(
+    (route) => route.id === entryRoute.id && route.language === extractLanguage({ locale: entryRoute.localeOrLanguage })
   );
-  if (entryRoute) {
+  if (entry) {
     const redirectTo = createSafeRouterPath({
-      localeOrLanguage: entry.localeOrLanguage,
-      path: entryRoute.path
+      localeOrLanguage: entryRoute.localeOrLanguage,
+      path: entry.path
     });
     routeChildren.push(
       createRoute({
@@ -1634,15 +1647,17 @@ var Router = /* @__PURE__ */ __name((props) => {
             localeOrLanguage: locale,
             path: route.path
           }),
-          notFoundComponent: config.notFoundComponent,
-          component: routeConfig.component
-          /*
-                TODO : generic way of translation metadata
-                loader: async () => {
-                    document.title = route.title(locale, language, region);
-                    return {};
-                },
-                */
+          component: routeConfig.component,
+          beforeLoad: /* @__PURE__ */ __name(({ context: context2 }) => {
+            if (routeConfig.beforeLoad) {
+              routeConfig.beforeLoad(context2, route.language, region);
+            }
+          }, "beforeLoad"),
+          loader: /* @__PURE__ */ __name(async ({ params, context: context2 }) => {
+            if (routeConfig.loader) {
+              routeConfig.loader(params, context2, route.language, region);
+            }
+          }, "loader")
         })
       );
     });
@@ -1675,7 +1690,9 @@ var Router = /* @__PURE__ */ __name((props) => {
     () => createRouter({
       routeTree,
       trailingSlash: "never",
-      defaultNotFoundComponent: config.notFoundComponent
+      defaultNotFoundComponent: config.notFoundComponent,
+      defaultErrorComponent: config.errorComponent,
+      context
     }),
     [routeTree, config.notFoundComponent]
   );
@@ -1686,19 +1703,6 @@ var Router = /* @__PURE__ */ __name((props) => {
     }),
     [tanstackRouter, config]
   );
-  const linguiI18N = useMemo(
-    () => new I18n({
-      missing: /* @__PURE__ */ __name((locale, key) => {
-        console.warn(`MISSING TRANSLATION: ${key} in ${locale}`);
-        return "";
-      }, "missing")
-    }),
-    []
-  );
-  const i18n = useMemo(
-    () => createRouteI18n({ i18n: linguiI18N }),
-    [linguiI18N]
-  );
   linguiI18N.activate(router.defaultLanguage());
   useEffect(() => {
     (async () => {
@@ -1706,20 +1710,20 @@ var Router = /* @__PURE__ */ __name((props) => {
         pathname: window.location.pathname
       });
       const lang = extractedLocale ? extractLanguage({ locale: extractedLocale }) : router.defaultLanguage();
-      const messages = await loadTranslation(lang);
+      const messages = await translations(lang);
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages);
       linguiI18N.activate(lang);
       i18n.load(lang, compiledMessages);
     })();
-  }, [i18n, linguiI18N, loadTranslation, router]);
+  }, [i18n, linguiI18N, translations, router]);
   useEffect(() => {
     router.languages().forEach(async (lang) => {
-      const messages = await loadTranslation(lang);
+      const messages = await translations(lang);
       const compiledMessages = toCompiledMessages(messages);
       i18n.load(lang, compiledMessages);
     });
-  }, [i18n, loadTranslation, router]);
+  }, [i18n, translations, router]);
   return /* @__PURE__ */ jsx(RouteI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsx(I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsx(RouterCoreContext.Provider, { value: router, children: /* @__PURE__ */ jsx(RouterProvider, { router: tanstackRouter }) }) }) });
 }, "Router");
 var useRouter = /* @__PURE__ */ __name(() => {
@@ -1819,16 +1823,18 @@ var useRouterBootstrapped = /* @__PURE__ */ __name(() => {
 
 // src/Utils/createRouterConfig.tsx
 var createRouterConfig = /* @__PURE__ */ __name(({
-  entry,
+  entryRoute,
   components,
   routes,
-  notFoundComponent
+  notFoundComponent,
+  errorComponent
 }) => {
   return {
-    entry,
+    entryRoute,
     components,
     routes,
-    notFoundComponent
+    notFoundComponent,
+    errorComponent
   };
 }, "createRouterConfig");
 

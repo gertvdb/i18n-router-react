@@ -4,24 +4,30 @@ import type {
   IRouterConfig,
   IRoutes,
 } from "@/Types.tsx";
-import type { NotFoundRouteProps } from "@tanstack/react-router";
+import type {
+  ErrorComponentProps,
+  NotFoundRouteProps,
+} from "@tanstack/react-router";
 import React from "react";
 
 export const createRouterConfig = ({
-  entry,
+  entryRoute,
   components,
   routes,
   notFoundComponent,
+  errorComponent,
 }: {
-  entry: IRouteEntry;
+  entryRoute: IRouteEntry;
   components: IRouteComponents;
   routes: IRoutes;
   notFoundComponent: (props: NotFoundRouteProps) => React.ReactNode;
+  errorComponent: (props: ErrorComponentProps) => React.ReactNode;
 }): IRouterConfig => {
   return {
-    entry,
+    entryRoute,
     components,
     routes,
     notFoundComponent,
+    errorComponent,
   };
 };

@@ -1,4 +1,4 @@
-import type {
+import {
   IRoute,
   IRouter,
   IRouteRegion,
@@ -28,27 +28,45 @@ import { extractLocale } from "@/Utils/extractLocale";
 import { toCompiledMessages } from "@/Utils/toCompiledMessages";
 
 export const Router: FC<RouterProps> = (props: RouterProps) => {
-  const { config, loadTranslation } = props;
-  const { routes, components, entry } = config;
+  const { config, translations, context } = props;
+
+  const { routes, components, entryRoute } = config;
 
   const rootRoute = createRootRoute({
     component: () => <RouterOutlet />,
     notFoundComponent: config.notFoundComponent,
   });
 
+  const linguiI18N = useMemo(
+    () =>
+      new LinguiI18n({
+        missing: (locale, key) => {
+          console.warn(`MISSING TRANSLATION: ${key} in ${locale}`);
+          return "";
+        },
+      }),
+    [],
+  );
+
+  const i18n = useMemo(
+    () => createRouteI18n({ i18n: linguiI18N }),
+    [linguiI18N],
+  );
+
   const routeChildren: AnyRoute[] = [];
   const languageFirstRegion: Record<string, string> = {};
 
-  const entryRoute = routes.find(
-    (route) =>
-      route.id === entry.id &&
-      route.language === extractLanguage({ locale: entry.localeOrLanguage }),
+  const entry = routes.find(
+    (route: { id: any; language: string }) =>
+      route.id === entryRoute.id &&
+      route.language ===
+        extractLanguage({ locale: entryRoute.localeOrLanguage }),
   );
 
-  if (entryRoute) {
+  if (entry) {
     const redirectTo = createSafeRouterPath({
-      localeOrLanguage: entry.localeOrLanguage,
-      path: entryRoute.path,
+      localeOrLanguage: entryRoute.localeOrLanguage,
+      path: entry.path,
     });
 
     // Entry Route
@@ -95,15 +113,17 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
             localeOrLanguage: locale,
             path: route.path,
           }),
-          notFoundComponent: config.notFoundComponent,
           component: routeConfig.component,
-          /*
-                TODO : generic way of translation metadata
-                loader: async () => {
-                    document.title = route.title(locale, language, region);
-                    return {};
-                },
-                */
+          beforeLoad: ({ context }) => {
+            if (routeConfig.beforeLoad) {
+              routeConfig.beforeLoad(context, route.language, region);
+            }
+          },
+          loader: async ({ params, context }) => {
+            if (routeConfig.loader) {
+              routeConfig.loader(params, context, route.language, region);
+            }
+          },
         }) as AnyRoute,
       );
     });
@@ -146,6 +166,8 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
         routeTree,
         trailingSlash: "never",
         defaultNotFoundComponent: config.notFoundComponent,
+        defaultErrorComponent: config.errorComponent,
+        context: context,
       }),
     [routeTree, config.notFoundComponent],
   );
@@ -153,26 +175,10 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
   const router: IRouter = useMemo(
     () =>
       createRouterCore({
-        config,
+        config: config,
         router: tanstackRouter,
       }),
     [tanstackRouter, config],
-  );
-
-  const linguiI18N = useMemo(
-    () =>
-      new LinguiI18n({
-        missing: (locale, key) => {
-          console.warn(`MISSING TRANSLATION: ${key} in ${locale}`);
-          return "";
-        },
-      }),
-    [],
-  );
-
-  const i18n = useMemo(
-    () => createRouteI18n({ i18n: linguiI18N }),
-    [linguiI18N],
   );
 
   // Active so we render through in <LinguiI18nProvider>, loading is handle by <RouteLoadingContext>
@@ -188,21 +194,21 @@ export const Router: FC<RouterProps> = (props: RouterProps) => {
         ? extractLanguage({ locale: extractedLocale })
         : router.defaultLanguage();
 
-      const messages = await loadTranslation(lang);
+      const messages = await translations(lang);
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages as ITranslations);
       linguiI18N.activate(lang);
       i18n.load(lang, compiledMessages as ITranslations);
     })();
-  }, [i18n, linguiI18N, loadTranslation, router]);
+  }, [i18n, linguiI18N, translations, router]);
 
   useEffect(() => {
     router.languages().forEach(async (lang) => {
-      const messages = await loadTranslation(lang);
+      const messages = await translations(lang);
       const compiledMessages = toCompiledMessages(messages);
       i18n.load(lang, compiledMessages as ITranslations);
     });
-  }, [i18n, loadTranslation, router]);
+  }, [i18n, translations, router]);
 
   return (
     <RouteI18nContext.Provider value={i18n}>

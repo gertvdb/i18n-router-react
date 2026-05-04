@@ -1,5 +1,8 @@
 import React from "react";
-import type { NotFoundRouteProps } from "@tanstack/react-router";
+import type {
+  ErrorComponentProps,
+  NotFoundRouteProps,
+} from "@tanstack/react-router";
 
 export type IRouteId = string;
 export type IRouteLocale = string; // nl-nl, en-nl, ...
@@ -8,10 +11,22 @@ export type IRouteLanguage = string; // nl, fr
 
 export type IRoutePath = string;
 
-export interface IRouteComponent {
+export interface IRouteComponent<TLoaderData = any, TRouteContext = any> {
   component: () => React.ReactNode;
+  beforeLoad?: (
+    context: any,
+    language: IRouteLanguage,
+    region: IRouteRegion,
+  ) => Promise<TRouteContext> | TRouteContext | void;
+  loader?: (
+    params: any,
+    context: any,
+    language: IRouteLanguage,
+    region: IRouteRegion,
+  ) => Promise<TLoaderData> | TLoaderData;
 }
-export type IRouteComponents = Record<IRouteId, IRouteComponent>;
+
+export type IRouteComponents = Record<IRouteId, IRouteComponent<any>>;
 
 export interface ILocaleRoute {
   id: IRouteId;
@@ -33,10 +48,11 @@ export interface IRouteEntry {
 }
 
 export interface IRouterConfig {
-  entry: IRouteEntry;
   components: IRouteComponents;
   routes: IRoutes;
+  entryRoute: IRouteEntry;
   notFoundComponent: (props: NotFoundRouteProps) => React.ReactNode;
+  errorComponent: (props: ErrorComponentProps) => React.ReactNode;
 }
 
 export interface IRouter {
@@ -115,13 +131,19 @@ export interface IRouteI18N {
 export type ITranslations = Record<string, string>;
 
 export interface RouterProps {
+  context: Record<string, unknown>;
   config: IRouterConfig;
-  loadTranslation(
+  translations(
     language: IRouteLanguage,
   ): ITranslations | Promise<ITranslations>;
 }
 
 export interface RouteParamsProps {
+  router: IRouter;
+  route: ILocaleRoute;
+}
+
+export interface RouteLoaderDataProps {
   router: IRouter;
   route: ILocaleRoute;
 }

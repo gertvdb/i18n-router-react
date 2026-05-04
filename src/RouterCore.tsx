@@ -204,7 +204,7 @@ export class RouterCore<TRouter extends AnyRouter> implements IRouter {
 
   defaultLanguage(): IRouteLanguage {
     return extractLanguage({
-      locale: this._config.entry.localeOrLanguage,
+      locale: this._config.entryRoute.localeOrLanguage,
     }) as IRouteLanguage;
   }
 
