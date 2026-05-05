@@ -1731,7 +1731,10 @@ var Router = /* @__PURE__ */ __name((props) => {
     () => createRouteI18n({ i18n: linguiI18N }),
     [linguiI18N]
   );
-  linguiI18N.activate(router.defaultLanguage());
+  linguiI18N.loadAndActivate({
+    locale: router.defaultLanguage(),
+    messages: {}
+  });
   useEffect(() => {
     (async () => {
       const extractedLocale = extractLocale({

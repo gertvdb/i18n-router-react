@@ -216,7 +216,10 @@ export const Router = <TContext extends Record<string, unknown>>(
   );
 
   // Active so we render through in <LinguiI18nProvider>, loading is handle by <RouteLoadingContext>
-  linguiI18N.activate(router.defaultLanguage());
+  linguiI18N.loadAndActivate({
+    locale: router.defaultLanguage(),
+    messages: {},
+  });
 
   // Extract locale only on first load or refresh.
   useEffect(() => {
