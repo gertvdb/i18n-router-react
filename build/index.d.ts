@@ -38,7 +38,8 @@ type IRoutes = IRoute[];
 type IRouteContexts = IRouteContext[];
 interface IRouteEntry {
     id: IRouteId;
-    localeOrLanguage: IRouteLanguage | IRouteLocale;
+    language: IRouteLanguage;
+    region: IRouteRegion;
 }
 interface ILayoutRoute<TRouteContext = any, TContext = any> {
     id: IRouteId;

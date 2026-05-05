@@ -1689,6 +1689,25 @@ var Router = /* @__PURE__ */ __name((props) => {
           }, "loader")
         });
       }
+      if (entryRoute.id === route.id && entryRoute.language === route.language && entryRoute.region === region) {
+        const entryPath = "/";
+        const redirectToEntry = createSafeRouterPath({
+          localeOrLanguage: route.language,
+          path: route.path
+        });
+        redirectRoutes[entryPath] = createRoute({
+          getParentRoute: /* @__PURE__ */ __name(() => {
+            if (currentRouteConfig.contextId) {
+              return idRoutes[currentRouteConfig.contextId];
+            }
+            return rootRoute;
+          }, "getParentRoute"),
+          path: entryPath,
+          loader: /* @__PURE__ */ __name(async () => {
+            throw redirect({ to: redirectToEntry });
+          }, "loader")
+        });
+      }
     });
   });
   const routeList = [
@@ -1699,7 +1718,6 @@ var Router = /* @__PURE__ */ __name((props) => {
   const routeTree = useMemo(() => {
     return rootRoute.addChildren(routeList);
   }, [rootRoute, routeList]);
-  console.log(routeTree);
   const tanstackRouter = useMemo(
     () => createRouter({
       routeTree,

@@ -159,6 +159,32 @@ export const Router = <TContext extends Record<string, unknown>>(
           },
         });
       }
+
+      // entryRoute
+      if (
+        entryRoute.id === route.id &&
+        entryRoute.language === route.language &&
+        entryRoute.region === region
+      ) {
+        const entryPath = "/";
+        const redirectToEntry = createSafeRouterPath({
+          localeOrLanguage: route.language,
+          path: route.path,
+        });
+
+        redirectRoutes[entryPath] = createRoute({
+          getParentRoute: () => {
+            if (currentRouteConfig.contextId) {
+              return idRoutes[currentRouteConfig.contextId];
+            }
+            return rootRoute;
+          },
+          path: entryPath,
+          loader: async () => {
+            throw redirect({ to: redirectToEntry });
+          },
+        });
+      }
     });
   });
   // END REGISTER ROUTES
@@ -173,8 +199,6 @@ export const Router = <TContext extends Record<string, unknown>>(
   const routeTree = useMemo(() => {
     return rootRoute.addChildren(routeList);
   }, [rootRoute, routeList]);
-
-  console.log(routeTree);
 
   const tanstackRouter = useMemo(
     () =>
@@ -257,41 +281,3 @@ export const Router = <TContext extends Record<string, unknown>>(
     </RouteI18nContext.Provider>
   );
 };
-
-/*
-TODO !!!!!
-
-// REDIRECT ENTRY ROUTE
-const findEntry = routes.find(
-    (route: { id: any; language: string }) =>
-        route.id === entryRoute.id &&
-        route.language ===
-        extractLanguage({ locale: entryRoute.localeOrLanguage }),
-);
-
-if (!findEntry) {
-  throw new Error(
-      "entryRoute not found: " +
-      entryRoute.id +
-      " - " +
-      entryRoute.localeOrLanguage
-  );
-}
-
-const redirectToEntry = createSafeRouterPath({
-  localeOrLanguage: findEntry.language,
-  path: findEntry.path,
-});
-
-allRoutes['entry'] = createRoute({
-      getParentRoute: () => {
-        return rootRoute;
-      },
-      path: "/",
-      loader: async () => {
-        throw redirect({to: redirectToEntry});
-      },
-    }
-);
-
-*/
