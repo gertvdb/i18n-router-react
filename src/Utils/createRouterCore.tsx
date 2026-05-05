@@ -1,7 +1,7 @@
 import type { IRouter, IRouterConfig } from "@/Types.tsx";
 import { RouterCore } from "@/RouterCore";
 
-import type { AnyRouter } from "@tanstack/react-router";
+import type { AnyRoute, AnyRouter } from "@tanstack/react-router";
 
 export const createRouterCore = <
   TContext extends Record<string, unknown>,
@@ -9,9 +9,11 @@ export const createRouterCore = <
 >({
   config,
   router,
+  routes,
 }: {
   config: IRouterConfig<TContext>;
   router: TRouter;
+  routes: AnyRoute[];
 }): IRouter => {
-  return RouterCore.new(config, router);
+  return RouterCore.new(config, router, routes);
 };

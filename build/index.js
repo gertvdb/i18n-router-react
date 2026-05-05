@@ -909,13 +909,14 @@ var extractLanguage = /* @__PURE__ */ __name(({
 
 // src/RouterCore.tsx
 var _RouterCore = class _RouterCore {
-  constructor(config, router) {
+  constructor(config, router, routes) {
     this._isBootstrapped = false;
     this._config = config;
     this._router = router;
+    this._routeIds = this._buildPathToIdMap(routes, router);
   }
-  static new(config, router) {
-    return new _RouterCore(config, router);
+  static new(config, router, routes) {
+    return new _RouterCore(config, router, routes);
   }
   reload() {
     window.location.reload();
@@ -988,6 +989,15 @@ var _RouterCore = class _RouterCore {
     }
     this._router.buildLocation({ to: toRoute.fullPath });
     return toRoute.fullPath;
+  }
+  id(id, localeOrLanguage, region) {
+    let path;
+    if (region !== void 0) {
+      path = this.path(id, localeOrLanguage, region);
+    } else {
+      path = this.path(id, localeOrLanguage);
+    }
+    return this._routeIds[path];
   }
   href({ id, locale, query, params, hash }) {
     const toRoute = this._route(id, locale);
@@ -1116,6 +1126,18 @@ var _RouterCore = class _RouterCore {
     const routesByPath = this._router.routesByPath;
     return routesByPath[path] ?? null;
   }
+  _buildPathToIdMap(routes, router) {
+    const map = {};
+    for (const route of routes) {
+      if (route.path) {
+        const fullPath = router.buildLocation({
+          to: route.id
+        }).fullPath;
+        map[fullPath] = route.id;
+      }
+    }
+    return map;
+  }
 };
 __name(_RouterCore, "RouterCore");
 var RouterCore = _RouterCore;
@@ -1123,9 +1145,10 @@ var RouterCore = _RouterCore;
 // src/Utils/createRouterCore.tsx
 var createRouterCore = /* @__PURE__ */ __name(({
   config,
-  router
+  router,
+  routes
 }) => {
-  return RouterCore.new(config, router);
+  return RouterCore.new(config, router, routes);
 }, "createRouterCore");
 var _RouteI18n = class _RouteI18n {
   constructor(i18n) {
@@ -1631,7 +1654,6 @@ var Router = /* @__PURE__ */ __name((props) => {
           }
           return rootRoute;
         }, "getParentRoute"),
-        id: path,
         path,
         component: currentRouteConfig.component,
         loader: /* @__PURE__ */ __name(async ({ params, context: context2 }) => {
@@ -1669,13 +1691,14 @@ var Router = /* @__PURE__ */ __name((props) => {
       }
     });
   });
+  const routeList = [
+    ...Object.values(idRoutes),
+    ...Object.values(realRoutes),
+    ...Object.values(redirectRoutes)
+  ];
   const routeTree = useMemo(() => {
-    return rootRoute.addChildren([
-      ...Object.values(idRoutes),
-      ...Object.values(realRoutes),
-      ...Object.values(redirectRoutes)
-    ]);
-  }, [rootRoute, idRoutes, realRoutes, redirectRoutes]);
+    return rootRoute.addChildren(routeList);
+  }, [rootRoute, routeList]);
   console.log(routeTree);
   const tanstackRouter = useMemo(
     () => createRouter({
@@ -1690,7 +1713,8 @@ var Router = /* @__PURE__ */ __name((props) => {
   const router = useMemo(
     () => createRouterCore({
       config,
-      router: tanstackRouter
+      router: tanstackRouter,
+      routes: routeList
     }),
     [tanstackRouter, config]
   );

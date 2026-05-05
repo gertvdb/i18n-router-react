@@ -98,6 +98,8 @@ export interface IRouter {
   }: AbsoluteHrefParams): string;
   path(id: IRouteId, locale: IRouteLocale): string;
   path(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
+  id(id: IRouteId, locale: IRouteLocale): string;
+  id(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
   hasRoute(id: IRouteId, locale: IRouteLocale): boolean;
   defaultLanguage(): IRouteLanguage;
   languages(): IRouteLanguage[];

@@ -10,7 +10,7 @@ import type {
   IRouteRegion,
   NavigateParams,
 } from "@/Types";
-import { Route } from "@tanstack/react-router";
+import { AnyRoute, Route } from "@tanstack/react-router";
 import type { AnyRouter } from "@tanstack/react-router";
 import { toLocale } from "@/Utils/toLocale";
 import { createSafeRouterPath } from "@/Utils/createSafeRouterPath";
@@ -23,17 +23,23 @@ export class RouterCore<
   private readonly _router: TRouter;
   private readonly _config: IRouterConfig<TContext>;
   private _isBootstrapped: boolean = false;
+  private _routeIds: Record<string, string>;
 
-  constructor(config: IRouterConfig<TContext>, router: TRouter) {
+  constructor(
+    config: IRouterConfig<TContext>,
+    router: TRouter,
+    routes: AnyRoute[],
+  ) {
     this._config = config;
     this._router = router;
+    this._routeIds = this._buildPathToIdMap(routes, router);
   }
 
   public static new<
     TContext extends Record<string, unknown>,
     TRouter extends AnyRouter,
-  >(config: IRouterConfig<TContext>, router: TRouter) {
-    return new RouterCore(config, router);
+  >(config: IRouterConfig<TContext>, router: TRouter, routes: AnyRoute[]) {
+    return new RouterCore(config, router, routes);
   }
 
   reload() {
@@ -121,6 +127,23 @@ export class RouterCore<
     }
     this._router.buildLocation({ to: toRoute.fullPath });
     return toRoute.fullPath;
+  }
+
+  id(id: IRouteId, locale: IRouteLocale): string;
+  id(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
+  id(
+    id: IRouteId,
+    localeOrLanguage: IRouteLocale | IRouteLanguage,
+    region?: IRouteRegion,
+  ): string {
+    let path: string;
+    if (region !== undefined) {
+      path = this.path(id, localeOrLanguage, region);
+    } else {
+      path = this.path(id, localeOrLanguage);
+    }
+
+    return this._routeIds[path];
   }
 
   href({ id, locale, query, params, hash }: HrefParams) {
@@ -280,5 +303,22 @@ export class RouterCore<
 
     const routesByPath = this._router.routesByPath;
     return routesByPath[path] ?? null;
+  }
+
+  private _buildPathToIdMap(routes: AnyRoute[], router: any) {
+    const map: Record<string, string> = {};
+
+    for (const route of routes) {
+      // Only include routes that actually have a path
+      if (route.path) {
+        const fullPath = router.buildLocation({
+          to: route.id,
+        }).fullPath;
+
+        map[fullPath] = route.id;
+      }
+    }
+
+    return map;
   }
 }

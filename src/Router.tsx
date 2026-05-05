@@ -121,7 +121,6 @@ export const Router = <TContext extends Record<string, unknown>>(
           }
           return rootRoute;
         },
-        id: path,
         path: path,
         component: currentRouteConfig.component,
         loader: async ({ params, context }) => {
@@ -164,14 +163,16 @@ export const Router = <TContext extends Record<string, unknown>>(
   });
   // END REGISTER ROUTES
 
+  const routeList = [
+    ...Object.values(idRoutes),
+    ...Object.values(realRoutes),
+    ...Object.values(redirectRoutes),
+  ];
+
   // BUILD ROUTER
   const routeTree = useMemo(() => {
-    return rootRoute.addChildren([
-      ...Object.values(idRoutes),
-      ...Object.values(realRoutes),
-      ...Object.values(redirectRoutes),
-    ]);
-  }, [rootRoute, idRoutes, realRoutes, redirectRoutes]);
+    return rootRoute.addChildren(routeList);
+  }, [rootRoute, routeList]);
 
   console.log(routeTree);
 
@@ -192,6 +193,7 @@ export const Router = <TContext extends Record<string, unknown>>(
       createRouterCore<TContext, typeof tanstackRouter>({
         config: config,
         router: tanstackRouter,
+        routes: routeList,
       }),
     [tanstackRouter, config],
   );
