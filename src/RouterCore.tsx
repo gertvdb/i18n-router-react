@@ -22,13 +22,11 @@ export class RouterCore<
 > implements IRouter {
   private readonly _router: TRouter;
   private readonly _config: IRouterConfig<TContext>;
-  private readonly _routeMap: Map<IRouteId, IRoute[]>;
   private _isBootstrapped: boolean = false;
 
   constructor(config: IRouterConfig<TContext>, router: TRouter) {
     this._config = config;
     this._router = router;
-    this._routeMap = this._buildRouteMap(config.routes);
   }
 
   public static new<
@@ -196,10 +194,6 @@ export class RouterCore<
         return false;
     }*/
 
-  getRouteHierarchy(id: IRouteId): IRoute[] {
-    return this._routeMap.get(id) ?? [];
-  }
-
   hasRoute(id: IRouteId, locale: IRouteLocale) {
     const route = this._route(id, locale);
     return !!route;
@@ -247,33 +241,6 @@ export class RouterCore<
     }
 
     return this._isBootstrapped;
-  }
-
-  private _buildRouteMap(routes: IRoute[]): Map<IRouteId, IRoute[]> {
-    const routeMap = new Map<IRouteId, IRoute[]>();
-
-    routes.forEach((route) => {
-      const hierarchy: IRoute[] = [route];
-      let currentRoute = route;
-
-      while (currentRoute.parentId) {
-        const parent = routes.find(
-          (r) =>
-            r.id === currentRoute.parentId &&
-            r.language === currentRoute.language,
-        );
-        if (parent) {
-          hierarchy.unshift(parent);
-          currentRoute = parent;
-        } else {
-          break;
-        }
-      }
-
-      routeMap.set(route.id, hierarchy);
-    });
-
-    return routeMap;
   }
 
   private _route(

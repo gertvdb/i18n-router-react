@@ -121,6 +121,7 @@ export const Router = <TContext extends Record<string, unknown>>(
           }
           return rootRoute;
         },
+        id: path,
         path: path,
         component: currentRouteConfig.component,
         loader: async ({ params, context }) => {
@@ -251,3 +252,41 @@ export const Router = <TContext extends Record<string, unknown>>(
     </RouteI18nContext.Provider>
   );
 };
+
+/*
+TODO !!!!!
+
+// REDIRECT ENTRY ROUTE
+const findEntry = routes.find(
+    (route: { id: any; language: string }) =>
+        route.id === entryRoute.id &&
+        route.language ===
+        extractLanguage({ locale: entryRoute.localeOrLanguage }),
+);
+
+if (!findEntry) {
+  throw new Error(
+      "entryRoute not found: " +
+      entryRoute.id +
+      " - " +
+      entryRoute.localeOrLanguage
+  );
+}
+
+const redirectToEntry = createSafeRouterPath({
+  localeOrLanguage: findEntry.language,
+  path: findEntry.path,
+});
+
+allRoutes['entry'] = createRoute({
+      getParentRoute: () => {
+        return rootRoute;
+      },
+      path: "/",
+      loader: async () => {
+        throw redirect({to: redirectToEntry});
+      },
+    }
+);
+
+*/
