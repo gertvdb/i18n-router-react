@@ -124,6 +124,11 @@ export const Router = <TContext extends Record<string, unknown>>(
       );
     }
 
+    // Context Routes
+    Object.values(contextChildren).forEach((route) => {
+      children.push(route);
+    });
+
     // Other Routes
     routes.forEach((route: IRoute) => {
       if (!languageFirstRegion[route.language] && route.regions.length > 0) {
@@ -222,11 +227,11 @@ export const Router = <TContext extends Record<string, unknown>>(
       createRouter({
         routeTree,
         trailingSlash: "never",
-        defaultNotFoundComponent: config.notFoundComponent,
-        defaultErrorComponent: config.errorComponent,
+        defaultNotFoundComponent: notFoundComponent,
+        defaultErrorComponent: errorComponent,
         context: context,
       }),
-    [routeTree, config.notFoundComponent, config.errorComponent, context],
+    [routeTree, notFoundComponent, errorComponent, context],
   );
 
   const router: IRouter = useMemo(

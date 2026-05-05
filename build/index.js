@@ -1661,6 +1661,9 @@ var Router = /* @__PURE__ */ __name((props) => {
         })
       );
     }
+    Object.values(contextChildren).forEach((route) => {
+      children.push(route);
+    });
     routes.forEach((route) => {
       if (!languageFirstRegion[route.language] && route.regions.length > 0) {
         languageFirstRegion[route.language] = route.regions[0];
@@ -1737,11 +1740,11 @@ var Router = /* @__PURE__ */ __name((props) => {
     () => createRouter({
       routeTree,
       trailingSlash: "never",
-      defaultNotFoundComponent: config.notFoundComponent,
-      defaultErrorComponent: config.errorComponent,
+      defaultNotFoundComponent: notFoundComponent,
+      defaultErrorComponent: errorComponent,
       context
     }),
-    [routeTree, config.notFoundComponent, config.errorComponent, context]
+    [routeTree, notFoundComponent, errorComponent, context]
   );
   const router = useMemo(
     () => createRouterCore({
