@@ -7,9 +7,9 @@ export function useRouteQuery<T, TSelected = T>({
   route,
   select,
 }: IRouteQueryProps<T, TSelected>): TSelected {
-  const path = useMemo(() => {
-    return router.path(route.id, route.locale);
+  const id = useMemo(() => {
+    return router.id(route.id, route.locale);
   }, [route.id, route.locale, router]);
 
-  return useSearch({ from: path, select: select as any }) as TSelected;
+  return useSearch({ from: id, select: select as any }) as TSelected;
 }

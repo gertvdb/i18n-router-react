@@ -7,16 +7,16 @@ export function useRouteParams<T, TSelected = T>({
   route,
   select,
 }: RouteParamsProps<T, TSelected>): TSelected | T {
-  const path = useMemo(() => {
+  const id = useMemo(() => {
     if (router.hasRoute(route.id, route.locale)) {
-      return router.path(route.id, route.locale);
+      return router.id(route.id, route.locale);
     }
     return route.id;
   }, [route.id, route.locale, router]);
 
   if (select) {
-    return useParams({ from: path, select: select as any }) as TSelected;
+    return useParams({ from: id, select: select as any }) as TSelected;
   }
 
-  return useParams({ from: path }) as T;
+  return useParams({ from: id }) as T;
 }

@@ -1793,16 +1793,16 @@ function useRouteParams({
   route,
   select
 }) {
-  const path = useMemo(() => {
+  const id = useMemo(() => {
     if (router.hasRoute(route.id, route.locale)) {
-      return router.path(route.id, route.locale);
+      return router.id(route.id, route.locale);
     }
     return route.id;
   }, [route.id, route.locale, router]);
   if (select) {
-    return useParams({ from: path, select });
+    return useParams({ from: id, select });
   }
-  return useParams({ from: path });
+  return useParams({ from: id });
 }
 __name(useRouteParams, "useRouteParams");
 function useRouteQuery({
@@ -1810,10 +1810,10 @@ function useRouteQuery({
   route,
   select
 }) {
-  const path = useMemo(() => {
-    return router.path(route.id, route.locale);
+  const id = useMemo(() => {
+    return router.id(route.id, route.locale);
   }, [route.id, route.locale, router]);
-  return useSearch({ from: path, select });
+  return useSearch({ from: id, select });
 }
 __name(useRouteQuery, "useRouteQuery");
 function useRouteLoaderData({
@@ -1821,16 +1821,16 @@ function useRouteLoaderData({
   route,
   select
 }) {
-  const path = useMemo(() => {
+  const id = useMemo(() => {
     if (router.hasRoute(route.id, route.locale)) {
-      return router.path(route.id, route.locale);
+      return router.id(route.id, route.locale);
     }
     return route.id;
   }, [route.id, route.locale, router]);
   if (select) {
-    return useLoaderData({ from: path, select });
+    return useLoaderData({ from: id, select });
   }
-  return useLoaderData({ from: path });
+  return useLoaderData({ from: id });
 }
 __name(useRouteLoaderData, "useRouteLoaderData");
 var useRouteIsTransitioning = /* @__PURE__ */ __name(() => {

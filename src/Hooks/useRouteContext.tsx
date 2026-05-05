@@ -7,19 +7,19 @@ export function useRouteContext<T, TSelected = T>({
   route,
   select,
 }: RouteContextProps<T, TSelected>): TSelected | T {
-  const path = useMemo(() => {
+  const id = useMemo(() => {
     if (router.hasRoute(route.id, route.locale)) {
-      return router.path(route.id, route.locale);
+      return router.id(route.id, route.locale);
     }
     return route.id;
   }, [route.id, route.locale, router]);
 
   if (select) {
     return TanstackUseRouteContext({
-      from: path,
+      from: id,
       select: select as any,
     }) as TSelected;
   }
 
-  return TanstackUseRouteContext({ from: path }) as T;
+  return TanstackUseRouteContext({ from: id }) as T;
 }

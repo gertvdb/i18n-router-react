@@ -7,16 +7,16 @@ export function useRouteLoaderData<T, TSelected = T>({
   route,
   select,
 }: RouteLoaderDataProps<T, TSelected>): TSelected | T {
-  const path = useMemo(() => {
+  const id = useMemo(() => {
     if (router.hasRoute(route.id, route.locale)) {
-      return router.path(route.id, route.locale);
+      return router.id(route.id, route.locale);
     }
     return route.id;
   }, [route.id, route.locale, router]);
 
   if (select) {
-    return useLoaderData({ from: path, select: select as any }) as TSelected;
+    return useLoaderData({ from: id, select: select as any }) as TSelected;
   }
 
-  return useLoaderData({ from: path }) as T;
+  return useLoaderData({ from: id }) as T;
 }
