@@ -222,6 +222,8 @@ export const Router = <TContext extends Record<string, unknown>>(
     [rootRoute, routeChildren],
   );
 
+  console.log(routeTree);
+
   const tanstackRouter = useMemo(
     () =>
       createRouter({

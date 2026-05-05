@@ -1738,6 +1738,7 @@ var Router = /* @__PURE__ */ __name((props) => {
     () => rootRoute.addChildren(routeChildren),
     [rootRoute, routeChildren]
   );
+  console.log(routeTree);
   const tanstackRouter = react.useMemo(
     () => reactRouter.createRouter({
       routeTree,
