@@ -1,12 +1,11 @@
 import {
-  ILayoutRoute,
   IRoute,
   IRouter,
   IRouteRegion,
   ITranslations,
   RouterProps,
 } from "@/Types";
-import { useMemo, type FC, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
   type AnyRoute,
   createRootRouteWithContext,
@@ -41,6 +40,11 @@ export const Router = <TContext extends Record<string, unknown>>(
     notFoundComponent,
   } = config;
 
+  let idRoutes: Record<string, AnyRoute> = {};
+  let realRoutes: Record<string, AnyRoute> = {};
+  let redirectRoutes: Record<string, AnyRoute> = {};
+
+  // REGISTER ROOT ROUTE
   const rootRoute = useMemo(
     () =>
       createRootRouteWithContext<TContext>()({
@@ -51,199 +55,122 @@ export const Router = <TContext extends Record<string, unknown>>(
       }),
     [notFoundComponent, errorComponent, context],
   );
+  // END REGISTER ROOT ROUTE
 
-  const linguiI18N = useMemo(
-    () =>
-      new LinguiI18n({
-        missing: (locale, key) => {
-          console.warn(`MISSING TRANSLATION: ${key} in ${locale}`);
-          return "";
-        },
-      }),
-    [],
-  );
-
-  const i18n = useMemo(
-    () => createRouteI18n({ i18n: linguiI18N }),
-    [linguiI18N],
-  );
-
-  const contextChildren: Record<string, AnyRoute> = useMemo(() => {
-    const children: Record<string, AnyRoute> = {};
-
-    contexts.forEach((route) => {
-      children[route.id] = createRoute({
-        getParentRoute: () => {
-          if (route.contextId && children[route.contextId]) {
-            return children[route.contextId];
-          }
-          return rootRoute;
-        },
-        id: route.id,
-        beforeLoad: (opts) => {
-          if (route.beforeLoad) {
-            return route.beforeLoad({
-              ...opts,
-              context: opts.context as TContext,
-            });
-          }
-        },
-        component: () => <RouterOutlet />,
-      }) as AnyRoute;
+  // REGISTER CONTEXT ROUTES
+  contexts.forEach((route) => {
+    idRoutes[route.id] = createRoute({
+      getParentRoute: () => {
+        if (route.contextId) {
+          return idRoutes[route.contextId];
+        }
+        return rootRoute;
+      },
+      id: route.id,
+      beforeLoad: (opts) => {
+        if (route.beforeLoad) {
+          return route.beforeLoad({
+            ...opts,
+            context: opts.context as TContext,
+          });
+        }
+      },
+      component: () => <RouterOutlet />,
     });
+  });
+  // END REGISTER CONTEXT ROUTES
 
-    return children;
-  }, [contexts, rootRoute]);
+  // REGISTER ROUTES
+  const languageFirstRegion: Record<string, string> = {};
 
-  const routeChildren: AnyRoute[] = useMemo(() => {
-    const children: AnyRoute[] = [];
-    const contextChildrenMap: Record<string, AnyRoute[]> = {};
+  routes.forEach((route) => {
+    if (!languageFirstRegion[route.language] && route.regions.length > 0) {
+      languageFirstRegion[route.language] = route.regions[0];
+    }
 
-    const entry = routes.find(
-      (route: { id: any; language: string }) =>
-        route.id === entryRoute.id &&
-        route.language ===
-          extractLanguage({ locale: entryRoute.localeOrLanguage }),
-    );
+    const currentRouteConfig = components[route.id];
+    if (!currentRouteConfig) {
+      return; // Skip this route if no configuration is found.
+    }
 
-    if (entry) {
-      const redirectTo = createSafeRouterPath({
-        localeOrLanguage: entryRoute.localeOrLanguage,
-        path: entry.path,
-      });
-
-      // Entry Route
-      children.push(
-        createRoute({
-          getParentRoute: () => rootRoute,
-          path: "/",
-          loader: async () => {
-            throw redirect({ to: redirectTo });
-          },
-        }) as AnyRoute,
+    const regions = route.regions;
+    if (regions.length === 0) {
+      throw new Error(
+        "IRoutes config for route: " +
+          route.id +
+          " - " +
+          route.language +
+          " must at least contain one region",
       );
     }
 
-    // Initialize contextChildrenMap
-    Object.keys(contextChildren).forEach((id) => {
-      contextChildrenMap[id] = [];
-    });
+    regions.forEach((region: IRouteRegion) => {
+      const locale = toLocale({ language: route.language, region: region });
 
-    // Sort contexts: those with contextId go to their parent, those without go to children
-    contexts.forEach((contextConfig) => {
-      const route = contextChildren[contextConfig.id];
-      if (contextConfig.contextId && contextChildren[contextConfig.contextId]) {
-        contextChildrenMap[contextConfig.contextId].push(route);
-      } else {
-        children.push(route);
-      }
-    });
+      const isFirstRegion = languageFirstRegion[route.language] === region;
 
-    const languageFirstRegion: Record<string, string> = {};
-
-    // Other Routes
-    routes.forEach((route: IRoute) => {
-      if (!languageFirstRegion[route.language] && route.regions.length > 0) {
-        languageFirstRegion[route.language] = route.regions[0];
-      }
-
-      const routeConfig = components[route.id];
-      if (!routeConfig) {
-        return; // Skip this route if no configuration is found.
-      }
-
-      const regions = route.regions;
-      if (regions.length === 0) {
-        throw new Error(
-          "IRoutes config for route: " +
-            route.id +
-            " - " +
-            route.language +
-            " must at least contain one region",
-        );
-      }
-
-      regions.forEach((region: IRouteRegion) => {
-        const locale = toLocale({ language: route.language, region: region });
-
-        const r = createRoute({
-          getParentRoute: () => {
-            if (
-              routeConfig.contextId &&
-              contextChildren[routeConfig.contextId]
-            ) {
-              return contextChildren[routeConfig.contextId];
-            }
-            return rootRoute;
-          },
-          path: createSafeRouterPath({
-            localeOrLanguage: locale,
-            path: route.path,
-          }),
-          component: routeConfig.component,
-          loader: async ({ params, context }) => {
-            if (routeConfig.loader) {
-              return routeConfig.loader(
-                params,
-                { context },
-                route.language,
-                region,
-              );
-            }
-          },
-        }) as AnyRoute;
-
-        if (routeConfig.contextId && contextChildren[routeConfig.contextId]) {
-          contextChildrenMap[routeConfig.contextId].push(r);
-        } else {
-          children.push(r);
-        }
+      const path = createSafeRouterPath({
+        localeOrLanguage: locale,
+        path: route.path,
       });
 
-      // Redirect from /language/path to /language-firstRegion/path
-      const firstRegion = languageFirstRegion[route.language];
-      if (firstRegion) {
-        const firstLocale = toLocale({
-          language: route.language,
-          region: firstRegion,
-        });
-        const languagePath =
-          "/" +
-          route.language.toLowerCase() +
-          (route.path === "/" ? "" : route.path.toLowerCase());
-        const targetPath = createSafeRouterPath({
-          localeOrLanguage: firstLocale,
+      realRoutes[path] = createRoute({
+        getParentRoute: () => {
+          if (currentRouteConfig.contextId) {
+            return idRoutes[currentRouteConfig.contextId];
+          }
+          return rootRoute;
+        },
+        path: path,
+        component: currentRouteConfig.component,
+        loader: async ({ params, context }) => {
+          if (currentRouteConfig.loader) {
+            return currentRouteConfig.loader(
+              params,
+              { context },
+              route.language,
+              region,
+            );
+          }
+        },
+      }) as AnyRoute;
+
+      if (isFirstRegion) {
+        const redirectPath = createSafeRouterPath({
+          localeOrLanguage: route.language,
           path: route.path,
         });
 
-        if (languagePath !== targetPath) {
-          children.push(
-            createRoute({
-              getParentRoute: () => rootRoute,
-              path: languagePath,
-              loader: async () => {
-                throw redirect({ to: targetPath });
-              },
-            }) as AnyRoute,
-          );
-        }
+        const targetPath = createSafeRouterPath({
+          localeOrLanguage: locale,
+          path: route.path,
+        });
+
+        redirectRoutes[redirectPath] = createRoute({
+          getParentRoute: () => {
+            if (currentRouteConfig.contextId) {
+              return idRoutes[currentRouteConfig.contextId];
+            }
+            return rootRoute;
+          },
+          path: redirectPath,
+          loader: async () => {
+            throw redirect({ to: targetPath });
+          },
+        });
       }
     });
+  });
+  // END REGISTER ROUTES
 
-    // Add children to context routes
-    Object.entries(contextChildrenMap).forEach(([id, subChildren]) => {
-      if (subChildren.length > 0) {
-        contextChildren[id].addChildren(subChildren);
-      }
-    });
-
-    return children;
-  }, [rootRoute, routes, components, entryRoute, contexts, contextChildren]);
-
-  const routeTree = useMemo(
-    () => rootRoute.addChildren(routeChildren),
-    [rootRoute, routeChildren],
-  );
+  // BUILD ROUTER
+  const routeTree = useMemo(() => {
+    return rootRoute.addChildren([
+      ...Object.values(idRoutes),
+      ...Object.values(realRoutes),
+      ...Object.values(redirectRoutes),
+    ]);
+  }, [rootRoute, idRoutes, realRoutes, redirectRoutes]);
 
   console.log(routeTree);
 
@@ -266,6 +193,23 @@ export const Router = <TContext extends Record<string, unknown>>(
         router: tanstackRouter,
       }),
     [tanstackRouter, config],
+  );
+  // END BUILD ROUTER
+
+  const linguiI18N = useMemo(
+    () =>
+      new LinguiI18n({
+        missing: (locale, key) => {
+          console.warn(`MISSING TRANSLATION: ${key} in ${locale}`);
+          return "";
+        },
+      }),
+    [],
+  );
+
+  const i18n = useMemo(
+    () => createRouteI18n({ i18n: linguiI18N }),
+    [linguiI18N],
   );
 
   // Active so we render through in <LinguiI18nProvider>, loading is handle by <RouteLoadingContext>
