@@ -97,7 +97,7 @@ export const Router = <TContext extends Record<string, unknown>>(
 
   const routeChildren: AnyRoute[] = useMemo(() => {
     const children: AnyRoute[] = [];
-    const languageFirstRegion: Record<string, string> = {};
+    const contextChildrenMap: Record<string, AnyRoute[]> = {};
 
     const entry = routes.find(
       (route: { id: any; language: string }) =>
@@ -124,10 +124,22 @@ export const Router = <TContext extends Record<string, unknown>>(
       );
     }
 
-    // Context Routes
-    Object.values(contextChildren).forEach((route) => {
-      children.push(route);
+    // Initialize contextChildrenMap
+    Object.keys(contextChildren).forEach((id) => {
+      contextChildrenMap[id] = [];
     });
+
+    // Sort contexts: those with contextId go to their parent, those without go to children
+    contexts.forEach((contextConfig) => {
+      const route = contextChildren[contextConfig.id];
+      if (contextConfig.contextId && contextChildren[contextConfig.contextId]) {
+        contextChildrenMap[contextConfig.contextId].push(route);
+      } else {
+        children.push(route);
+      }
+    });
+
+    const languageFirstRegion: Record<string, string> = {};
 
     // Other Routes
     routes.forEach((route: IRoute) => {
@@ -154,34 +166,38 @@ export const Router = <TContext extends Record<string, unknown>>(
       regions.forEach((region: IRouteRegion) => {
         const locale = toLocale({ language: route.language, region: region });
 
-        children.push(
-          createRoute({
-            getParentRoute: () => {
-              if (
-                routeConfig.contextId &&
-                contextChildren[routeConfig.contextId]
-              ) {
-                return contextChildren[routeConfig.contextId];
-              }
-              return rootRoute;
-            },
-            path: createSafeRouterPath({
-              localeOrLanguage: locale,
-              path: route.path,
-            }),
-            component: routeConfig.component,
-            loader: async ({ params, context }) => {
-              if (routeConfig.loader) {
-                return routeConfig.loader(
-                  params,
-                  { context },
-                  route.language,
-                  region,
-                );
-              }
-            },
-          }) as AnyRoute,
-        );
+        const r = createRoute({
+          getParentRoute: () => {
+            if (
+              routeConfig.contextId &&
+              contextChildren[routeConfig.contextId]
+            ) {
+              return contextChildren[routeConfig.contextId];
+            }
+            return rootRoute;
+          },
+          path: createSafeRouterPath({
+            localeOrLanguage: locale,
+            path: route.path,
+          }),
+          component: routeConfig.component,
+          loader: async ({ params, context }) => {
+            if (routeConfig.loader) {
+              return routeConfig.loader(
+                params,
+                { context },
+                route.language,
+                region,
+              );
+            }
+          },
+        }) as AnyRoute;
+
+        if (routeConfig.contextId && contextChildren[routeConfig.contextId]) {
+          contextChildrenMap[routeConfig.contextId].push(r);
+        } else {
+          children.push(r);
+        }
       });
 
       // Redirect from /language/path to /language-firstRegion/path
@@ -214,8 +230,15 @@ export const Router = <TContext extends Record<string, unknown>>(
       }
     });
 
+    // Add children to context routes
+    Object.entries(contextChildrenMap).forEach(([id, subChildren]) => {
+      if (subChildren.length > 0) {
+        contextChildren[id].addChildren(subChildren);
+      }
+    });
+
     return children;
-  }, [rootRoute, routes, components, entryRoute, contextChildren]);
+  }, [rootRoute, routes, components, entryRoute, contexts, contextChildren]);
 
   const routeTree = useMemo(
     () => rootRoute.addChildren(routeChildren),

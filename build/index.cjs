@@ -1644,7 +1644,7 @@ var Router = /* @__PURE__ */ __name((props) => {
   }, [contexts, rootRoute]);
   const routeChildren = react.useMemo(() => {
     const children = [];
-    const languageFirstRegion = {};
+    const contextChildrenMap = {};
     const entry = routes.find(
       (route) => route.id === entryRoute.id && route.language === extractLanguage({ locale: entryRoute.localeOrLanguage })
     );
@@ -1663,9 +1663,18 @@ var Router = /* @__PURE__ */ __name((props) => {
         })
       );
     }
-    Object.values(contextChildren).forEach((route) => {
-      children.push(route);
+    Object.keys(contextChildren).forEach((id) => {
+      contextChildrenMap[id] = [];
     });
+    contexts.forEach((contextConfig) => {
+      const route = contextChildren[contextConfig.id];
+      if (contextConfig.contextId && contextChildren[contextConfig.contextId]) {
+        contextChildrenMap[contextConfig.contextId].push(route);
+      } else {
+        children.push(route);
+      }
+    });
+    const languageFirstRegion = {};
     routes.forEach((route) => {
       if (!languageFirstRegion[route.language] && route.regions.length > 0) {
         languageFirstRegion[route.language] = route.regions[0];
@@ -1682,31 +1691,34 @@ var Router = /* @__PURE__ */ __name((props) => {
       }
       regions.forEach((region) => {
         const locale = toLocale({ language: route.language, region });
-        children.push(
-          reactRouter.createRoute({
-            getParentRoute: /* @__PURE__ */ __name(() => {
-              if (routeConfig.contextId && contextChildren[routeConfig.contextId]) {
-                return contextChildren[routeConfig.contextId];
-              }
-              return rootRoute;
-            }, "getParentRoute"),
-            path: createSafeRouterPath({
-              localeOrLanguage: locale,
-              path: route.path
-            }),
-            component: routeConfig.component,
-            loader: /* @__PURE__ */ __name(async ({ params, context: context2 }) => {
-              if (routeConfig.loader) {
-                return routeConfig.loader(
-                  params,
-                  { context: context2 },
-                  route.language,
-                  region
-                );
-              }
-            }, "loader")
-          })
-        );
+        const r = reactRouter.createRoute({
+          getParentRoute: /* @__PURE__ */ __name(() => {
+            if (routeConfig.contextId && contextChildren[routeConfig.contextId]) {
+              return contextChildren[routeConfig.contextId];
+            }
+            return rootRoute;
+          }, "getParentRoute"),
+          path: createSafeRouterPath({
+            localeOrLanguage: locale,
+            path: route.path
+          }),
+          component: routeConfig.component,
+          loader: /* @__PURE__ */ __name(async ({ params, context: context2 }) => {
+            if (routeConfig.loader) {
+              return routeConfig.loader(
+                params,
+                { context: context2 },
+                route.language,
+                region
+              );
+            }
+          }, "loader")
+        });
+        if (routeConfig.contextId && contextChildren[routeConfig.contextId]) {
+          contextChildrenMap[routeConfig.contextId].push(r);
+        } else {
+          children.push(r);
+        }
       });
       const firstRegion = languageFirstRegion[route.language];
       if (firstRegion) {
@@ -1732,8 +1744,13 @@ var Router = /* @__PURE__ */ __name((props) => {
         }
       }
     });
+    Object.entries(contextChildrenMap).forEach(([id, subChildren]) => {
+      if (subChildren.length > 0) {
+        contextChildren[id].addChildren(subChildren);
+      }
+    });
     return children;
-  }, [rootRoute, routes, components, entryRoute, contextChildren]);
+  }, [rootRoute, routes, components, entryRoute, contexts, contextChildren]);
   const routeTree = react.useMemo(
     () => rootRoute.addChildren(routeChildren),
     [rootRoute, routeChildren]
