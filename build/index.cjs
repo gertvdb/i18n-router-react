@@ -1588,15 +1588,22 @@ function toCompiledMessages(rawMessages) {
 __name(toCompiledMessages, "toCompiledMessages");
 var Router = /* @__PURE__ */ __name((props) => {
   const { config, translations, context } = props;
-  const { routes, components, entryRoute } = config;
+  const {
+    routes,
+    contexts,
+    components,
+    entryRoute,
+    errorComponent,
+    notFoundComponent
+  } = config;
   const rootRoute = react.useMemo(
     () => reactRouter.createRootRouteWithContext()({
       component: /* @__PURE__ */ __name(() => /* @__PURE__ */ jsxRuntime.jsx(RouterOutlet, {}), "component"),
-      notFoundComponent: config.notFoundComponent,
-      errorComponent: config.errorComponent,
+      notFoundComponent,
+      errorComponent,
       context: /* @__PURE__ */ __name(() => context, "context")
     }),
-    [config.notFoundComponent, config.errorComponent, context]
+    [notFoundComponent, errorComponent, context]
   );
   const linguiI18N = react.useMemo(
     () => new core.I18n({
@@ -1611,6 +1618,30 @@ var Router = /* @__PURE__ */ __name((props) => {
     () => createRouteI18n({ i18n: linguiI18N }),
     [linguiI18N]
   );
+  const contextChildren = react.useMemo(() => {
+    const children = {};
+    contexts.forEach((route) => {
+      children[route.id] = reactRouter.createRoute({
+        getParentRoute: /* @__PURE__ */ __name(() => {
+          if (route.contextId && children[route.contextId]) {
+            return children[route.contextId];
+          }
+          return rootRoute;
+        }, "getParentRoute"),
+        id: route.id,
+        beforeLoad: /* @__PURE__ */ __name((opts) => {
+          if (route.beforeLoad) {
+            return route.beforeLoad({
+              ...opts,
+              context: opts.context
+            });
+          }
+        }, "beforeLoad"),
+        component: /* @__PURE__ */ __name(() => /* @__PURE__ */ jsxRuntime.jsx(RouterOutlet, {}), "component")
+      });
+    });
+    return children;
+  }, [contexts, rootRoute]);
   const routeChildren = react.useMemo(() => {
     const children = [];
     const languageFirstRegion = {};
@@ -1650,17 +1681,17 @@ var Router = /* @__PURE__ */ __name((props) => {
         const locale = toLocale({ language: route.language, region });
         children.push(
           reactRouter.createRoute({
-            getParentRoute: /* @__PURE__ */ __name(() => rootRoute, "getParentRoute"),
+            getParentRoute: /* @__PURE__ */ __name(() => {
+              if (routeConfig.contextId && contextChildren[routeConfig.contextId]) {
+                return contextChildren[routeConfig.contextId];
+              }
+              return rootRoute;
+            }, "getParentRoute"),
             path: createSafeRouterPath({
               localeOrLanguage: locale,
               path: route.path
             }),
             component: routeConfig.component,
-            beforeLoad: /* @__PURE__ */ __name(({ context: context2 }) => {
-              if (routeConfig.beforeLoad) {
-                routeConfig.beforeLoad({ context: context2 }, route.language, region);
-              }
-            }, "beforeLoad"),
             loader: /* @__PURE__ */ __name(async ({ params, context: context2 }) => {
               if (routeConfig.loader) {
                 return routeConfig.loader(
@@ -1699,7 +1730,7 @@ var Router = /* @__PURE__ */ __name((props) => {
       }
     });
     return children;
-  }, [rootRoute, routes, components, entryRoute]);
+  }, [rootRoute, routes, components, entryRoute, contextChildren]);
   const routeTree = react.useMemo(
     () => rootRoute.addChildren(routeChildren),
     [rootRoute, routeChildren]
@@ -1784,9 +1815,15 @@ function useRouteParams({
   select
 }) {
   const path = react.useMemo(() => {
-    return router.path(route.id, route.locale);
+    if (router.hasRoute(route.id, route.locale)) {
+      return router.path(route.id, route.locale);
+    }
+    return route.id;
   }, [route.id, route.locale, router]);
-  return reactRouter.useParams({ from: path, select });
+  if (select) {
+    return reactRouter.useParams({ from: path, select });
+  }
+  return reactRouter.useParams({ from: path });
 }
 __name(useRouteParams, "useRouteParams");
 function useRouteQuery({
@@ -1806,9 +1843,15 @@ function useRouteLoaderData({
   select
 }) {
   const path = react.useMemo(() => {
-    return router.path(route.id, route.locale);
+    if (router.hasRoute(route.id, route.locale)) {
+      return router.path(route.id, route.locale);
+    }
+    return route.id;
   }, [route.id, route.locale, router]);
-  return reactRouter.useLoaderData({ from: path, select });
+  if (select) {
+    return reactRouter.useLoaderData({ from: path, select });
+  }
+  return reactRouter.useLoaderData({ from: path });
 }
 __name(useRouteLoaderData, "useRouteLoaderData");
 var useRouteHierarchy = /* @__PURE__ */ __name((id) => {
@@ -1846,6 +1889,7 @@ var createRouterConfig = /* @__PURE__ */ __name(({
   entryRoute,
   components,
   routes,
+  contexts,
   notFoundComponent,
   errorComponent
 }) => {
@@ -1853,6 +1897,7 @@ var createRouterConfig = /* @__PURE__ */ __name(({
     entryRoute,
     components,
     routes,
+    contexts,
     notFoundComponent,
     errorComponent
   };

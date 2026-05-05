@@ -4,6 +4,7 @@ import type {
   NotFoundRouteProps,
 } from "@tanstack/react-router";
 
+export type IRouteContextId = string;
 export type IRouteId = string;
 export type IRouteLocale = string; // nl-nl, en-nl, ...
 export type IRouteRegion = string; // be , fr
@@ -11,17 +12,9 @@ export type IRouteLanguage = string; // nl, fr
 
 export type IRoutePath = string;
 
-export interface IRouteComponent<
-  TLoaderData = any,
-  TRouteContext = any,
-  TContext = any,
-> {
+export interface IRouteComponent<TLoaderData = any, TContext = any> {
   component: () => React.ReactNode;
-  beforeLoad?: (
-    opts: { context: TContext },
-    language: IRouteLanguage,
-    region: IRouteRegion,
-  ) => Promise<TRouteContext> | TRouteContext | void;
+  contextId?: IRouteContextId;
   loader?: (
     params: any,
     opts: { context: TContext },
@@ -32,7 +25,7 @@ export interface IRouteComponent<
 
 export type IRouteComponents<TContext = any> = Record<
   IRouteId,
-  IRouteComponent<any, any, TContext>
+  IRouteComponent<any, TContext>
 >;
 
 export interface ILocaleRoute {
@@ -45,18 +38,35 @@ export interface IRoute {
   language: IRouteLanguage;
   regions: IRouteRegion[];
   path: IRoutePath;
-  parentId?: IRouteId;
 }
+
+export interface IRouteContext<TRouteContext = any, TContext = any> {
+  id: IRouteContextId;
+  contextId?: IRouteContextId;
+  beforeLoad?: (opts: {
+    context: TContext;
+  }) => Promise<TRouteContext> | TRouteContext | void;
+}
+
 export type IRoutes = IRoute[];
+export type IRouteContexts = IRouteContext[];
 
 export interface IRouteEntry {
   id: IRouteId;
   localeOrLanguage: IRouteLanguage | IRouteLocale;
 }
 
+export interface ILayoutRoute<TRouteContext = any, TContext = any> {
+  id: IRouteId;
+  beforeLoad?: (opts: {
+    context: TContext;
+  }) => Promise<TRouteContext> | TRouteContext | void;
+}
+
 export interface IRouterConfig<TContext = any> {
   components: IRouteComponents<TContext>;
   routes: IRoutes;
+  contexts: IRouteContexts;
   entryRoute: IRouteEntry;
   notFoundComponent: (props: NotFoundRouteProps) => React.ReactNode;
   errorComponent: (props: ErrorComponentProps) => React.ReactNode;
@@ -145,20 +155,23 @@ export interface RouterProps<TContext = Record<string, unknown>> {
   ): ITranslations | Promise<ITranslations>;
 }
 
-export interface RouteParamsProps<T, TSelected = T> {
+export interface RoutePathProps {
   router: IRouter;
   route: ILocaleRoute;
+}
+
+export interface RouteParamsProps<T, TSelected = T> extends RoutePathProps {
   select?: (match: T) => TSelected;
 }
 
-export interface RouteLoaderDataProps<T, TSelected = T> {
-  router: IRouter;
-  route: ILocaleRoute;
+export interface RouteContextProps<T, TSelected = T> extends RoutePathProps {
   select?: (match: T) => TSelected;
 }
 
-export interface IRouteQueryProps<T, TSelected = T> {
-  router: IRouter;
-  route: ILocaleRoute;
+export interface RouteLoaderDataProps<T, TSelected = T> extends RoutePathProps {
+  select?: (match: T) => TSelected;
+}
+
+export interface IRouteQueryProps<T, TSelected = T> extends RoutePathProps {
   select?: (match: T) => TSelected;
 }

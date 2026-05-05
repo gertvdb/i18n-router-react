@@ -1,5 +1,6 @@
 import type {
   IRouteComponents,
+  IRouteContexts,
   IRouteEntry,
   IRouterConfig,
   IRoutes,
@@ -14,12 +15,14 @@ export const createRouterConfig = ({
   entryRoute,
   components,
   routes,
+  contexts,
   notFoundComponent,
   errorComponent,
 }: {
   entryRoute: IRouteEntry;
   components: IRouteComponents;
   routes: IRoutes;
+  contexts: IRouteContexts;
   notFoundComponent: (props: NotFoundRouteProps) => React.ReactNode;
   errorComponent: (props: ErrorComponentProps) => React.ReactNode;
 }): IRouterConfig => {
@@ -27,6 +30,7 @@ export const createRouterConfig = ({
     entryRoute,
     components,
     routes,
+    contexts,
     notFoundComponent,
     errorComponent,
   };

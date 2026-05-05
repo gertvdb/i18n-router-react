@@ -1,4 +1,5 @@
 import {
+  ILayoutRoute,
   IRoute,
   IRouter,
   IRouteRegion,
@@ -31,18 +32,24 @@ export const Router = <TContext extends Record<string, unknown>>(
   props: RouterProps<TContext>,
 ) => {
   const { config, translations, context } = props;
-
-  const { routes, components, entryRoute } = config;
+  const {
+    routes,
+    contexts,
+    components,
+    entryRoute,
+    errorComponent,
+    notFoundComponent,
+  } = config;
 
   const rootRoute = useMemo(
     () =>
       createRootRouteWithContext<TContext>()({
         component: () => <RouterOutlet />,
-        notFoundComponent: config.notFoundComponent,
-        errorComponent: config.errorComponent,
+        notFoundComponent: notFoundComponent,
+        errorComponent: errorComponent,
         context: () => context,
       }),
-    [config.notFoundComponent, config.errorComponent, context],
+    [notFoundComponent, errorComponent, context],
   );
 
   const linguiI18N = useMemo(
@@ -60,6 +67,33 @@ export const Router = <TContext extends Record<string, unknown>>(
     () => createRouteI18n({ i18n: linguiI18N }),
     [linguiI18N],
   );
+
+  const contextChildren: Record<string, AnyRoute> = useMemo(() => {
+    const children: Record<string, AnyRoute> = {};
+
+    contexts.forEach((route) => {
+      children[route.id] = createRoute({
+        getParentRoute: () => {
+          if (route.contextId && children[route.contextId]) {
+            return children[route.contextId];
+          }
+          return rootRoute;
+        },
+        id: route.id,
+        beforeLoad: (opts) => {
+          if (route.beforeLoad) {
+            return route.beforeLoad({
+              ...opts,
+              context: opts.context as TContext,
+            });
+          }
+        },
+        component: () => <RouterOutlet />,
+      }) as AnyRoute;
+    });
+
+    return children;
+  }, [contexts, rootRoute]);
 
   const routeChildren: AnyRoute[] = useMemo(() => {
     const children: AnyRoute[] = [];
@@ -117,17 +151,20 @@ export const Router = <TContext extends Record<string, unknown>>(
 
         children.push(
           createRoute({
-            getParentRoute: () => rootRoute,
+            getParentRoute: () => {
+              if (
+                routeConfig.contextId &&
+                contextChildren[routeConfig.contextId]
+              ) {
+                return contextChildren[routeConfig.contextId];
+              }
+              return rootRoute;
+            },
             path: createSafeRouterPath({
               localeOrLanguage: locale,
               path: route.path,
             }),
             component: routeConfig.component,
-            beforeLoad: ({ context }) => {
-              if (routeConfig.beforeLoad) {
-                routeConfig.beforeLoad({ context }, route.language, region);
-              }
-            },
             loader: async ({ params, context }) => {
               if (routeConfig.loader) {
                 return routeConfig.loader(
@@ -173,7 +210,7 @@ export const Router = <TContext extends Record<string, unknown>>(
     });
 
     return children;
-  }, [rootRoute, routes, components, entryRoute]);
+  }, [rootRoute, routes, components, entryRoute, contextChildren]);
 
   const routeTree = useMemo(
     () => rootRoute.addChildren(routeChildren),
