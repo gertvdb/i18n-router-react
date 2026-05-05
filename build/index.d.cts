@@ -64,7 +64,6 @@ interface IRouter {
     absolute({ baseUrl, id, locale, query, params, hash, }: AbsoluteHrefParams): string;
     path(id: IRouteId, locale: IRouteLocale): string;
     path(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
-    getRouteHierarchy(id: IRouteId): IRoute[];
     hasRoute(id: IRouteId, locale: IRouteLocale): boolean;
     defaultLanguage(): IRouteLanguage;
     languages(): IRouteLanguage[];
@@ -147,8 +146,6 @@ declare function useRouteQuery<T, TSelected = T>({ router, route, select, }: IRo
 
 declare function useRouteLoaderData<T, TSelected = T>({ router, route, select, }: RouteLoaderDataProps<T, TSelected>): TSelected | T;
 
-declare const useRouteHierarchy: (id: string) => IRoute[];
-
 declare const useRouteIsTransitioning: () => boolean;
 
 declare const useTranslationLoaded: () => boolean;
@@ -177,4 +174,4 @@ declare const toLocale: ({ language, region, }: {
     region: IRouteRegion;
 }) => IRouteLocale;
 
-export { type AbsoluteHrefParams, type HrefParams, type ILayoutRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContext, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteI18N, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRegion, type IRouter, type IRouterConfig, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, RouteI18nContext, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, Router, RouterCoreContext, type RouterProps, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteHierarchy, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useTranslationLoaded };
+export { type AbsoluteHrefParams, type HrefParams, type ILayoutRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContext, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteI18N, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRegion, type IRouter, type IRouterConfig, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, RouteI18nContext, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, Router, RouterCoreContext, type RouterProps, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useTranslationLoaded };

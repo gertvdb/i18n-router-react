@@ -915,7 +915,6 @@ var _RouterCore = class _RouterCore {
     this._isBootstrapped = false;
     this._config = config;
     this._router = router;
-    this._routeMap = this._buildRouteMap(config.routes);
   }
   static new(config, router) {
     return new _RouterCore(config, router);
@@ -1055,9 +1054,6 @@ var _RouterCore = class _RouterCore {
   
           return false;
       }*/
-  getRouteHierarchy(id) {
-    return this._routeMap.get(id) ?? [];
-  }
   hasRoute(id, locale) {
     const route = this._route(id, locale);
     return !!route;
@@ -1095,26 +1091,6 @@ var _RouterCore = class _RouterCore {
       this._isBootstrapped = true;
     }
     return this._isBootstrapped;
-  }
-  _buildRouteMap(routes) {
-    const routeMap = /* @__PURE__ */ new Map();
-    routes.forEach((route) => {
-      const hierarchy = [route];
-      let currentRoute = route;
-      while (currentRoute.parentId) {
-        const parent = routes.find(
-          (r) => r.id === currentRoute.parentId && r.language === currentRoute.language
-        );
-        if (parent) {
-          hierarchy.unshift(parent);
-          currentRoute = parent;
-        } else {
-          break;
-        }
-      }
-      routeMap.set(route.id, hierarchy);
-    });
-    return routeMap;
   }
   _route(id, localeOrLanguage) {
     const { components, routes } = this._config;
@@ -1657,6 +1633,7 @@ var Router = /* @__PURE__ */ __name((props) => {
           }
           return rootRoute;
         }, "getParentRoute"),
+        id: path,
         path,
         component: currentRouteConfig.component,
         loader: /* @__PURE__ */ __name(async ({ params, context: context2 }) => {
@@ -1834,12 +1811,6 @@ function useRouteLoaderData({
   return reactRouter.useLoaderData({ from: path });
 }
 __name(useRouteLoaderData, "useRouteLoaderData");
-var useRouteHierarchy = /* @__PURE__ */ __name((id) => {
-  const router = useRouter();
-  return react.useMemo(() => {
-    return router.getRouteHierarchy(id);
-  }, [id, router]);
-}, "useRouteHierarchy");
 var useRouteIsTransitioning = /* @__PURE__ */ __name(() => {
   const { isTransitioning } = reactRouter.useRouterState({
     select: /* @__PURE__ */ __name((state) => ({
@@ -1890,7 +1861,6 @@ exports.createRouterConfig = createRouterConfig;
 exports.extractLanguage = extractLanguage;
 exports.extractRegion = extractRegion;
 exports.toLocale = toLocale;
-exports.useRouteHierarchy = useRouteHierarchy;
 exports.useRouteI18n = useRouteI18n;
 exports.useRouteIsTransitioning = useRouteIsTransitioning;
 exports.useRouteLanguage = useRouteLanguage;

@@ -16,7 +16,6 @@ export { useRouteParams } from "./Hooks/useRouteParams";
 export { useRouteQuery } from "./Hooks/useRouteQuery";
 export { useRouteLoaderData } from "@/Hooks/useRouteLoaderData";
 
-export { useRouteHierarchy } from "./Hooks/useRouteHierarchy";
 export { useRouteIsTransitioning } from "./Hooks/useRouteIsTransitioning";
 export { useTranslationLoaded } from "./Hooks/useTranslationLoaded";
 export { useRouterBootstrapped } from "./Hooks/useRouterBootstrapped";

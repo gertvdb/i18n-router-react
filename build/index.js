@@ -913,7 +913,6 @@ var _RouterCore = class _RouterCore {
     this._isBootstrapped = false;
     this._config = config;
     this._router = router;
-    this._routeMap = this._buildRouteMap(config.routes);
   }
   static new(config, router) {
     return new _RouterCore(config, router);
@@ -1053,9 +1052,6 @@ var _RouterCore = class _RouterCore {
   
           return false;
       }*/
-  getRouteHierarchy(id) {
-    return this._routeMap.get(id) ?? [];
-  }
   hasRoute(id, locale) {
     const route = this._route(id, locale);
     return !!route;
@@ -1093,26 +1089,6 @@ var _RouterCore = class _RouterCore {
       this._isBootstrapped = true;
     }
     return this._isBootstrapped;
-  }
-  _buildRouteMap(routes) {
-    const routeMap = /* @__PURE__ */ new Map();
-    routes.forEach((route) => {
-      const hierarchy = [route];
-      let currentRoute = route;
-      while (currentRoute.parentId) {
-        const parent = routes.find(
-          (r) => r.id === currentRoute.parentId && r.language === currentRoute.language
-        );
-        if (parent) {
-          hierarchy.unshift(parent);
-          currentRoute = parent;
-        } else {
-          break;
-        }
-      }
-      routeMap.set(route.id, hierarchy);
-    });
-    return routeMap;
   }
   _route(id, localeOrLanguage) {
     const { components, routes } = this._config;
@@ -1655,6 +1631,7 @@ var Router = /* @__PURE__ */ __name((props) => {
           }
           return rootRoute;
         }, "getParentRoute"),
+        id: path,
         path,
         component: currentRouteConfig.component,
         loader: /* @__PURE__ */ __name(async ({ params, context: context2 }) => {
@@ -1832,12 +1809,6 @@ function useRouteLoaderData({
   return useLoaderData({ from: path });
 }
 __name(useRouteLoaderData, "useRouteLoaderData");
-var useRouteHierarchy = /* @__PURE__ */ __name((id) => {
-  const router = useRouter();
-  return useMemo(() => {
-    return router.getRouteHierarchy(id);
-  }, [id, router]);
-}, "useRouteHierarchy");
 var useRouteIsTransitioning = /* @__PURE__ */ __name(() => {
   const { isTransitioning } = useRouterState({
     select: /* @__PURE__ */ __name((state) => ({
@@ -1881,6 +1852,6 @@ var createRouterConfig = /* @__PURE__ */ __name(({
   };
 }, "createRouterConfig");
 
-export { RouteI18nContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteHierarchy, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useTranslationLoaded };
+export { RouteI18nContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useTranslationLoaded };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map
