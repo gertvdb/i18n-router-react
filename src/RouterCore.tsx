@@ -223,9 +223,7 @@ export class RouterCore<
   }
 
   defaultLanguage(): IRouteLanguage {
-    return extractLanguage({
-      locale: this._config.entryRoute.localeOrLanguage,
-    }) as IRouteLanguage;
+    return this._config.routeEntry.language as IRouteLanguage;
   }
 
   languages(): IRouteLanguage[] {

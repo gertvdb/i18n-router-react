@@ -902,13 +902,6 @@ var createSafeRouterPath = /* @__PURE__ */ __name(({
   return "/" + localeOrLanguage.toLowerCase() + safePath.toLowerCase();
 }, "createSafeRouterPath");
 
-// src/Utils/extractLanguage.tsx
-var extractLanguage = /* @__PURE__ */ __name(({
-  locale
-}) => {
-  return new Intl.Locale(locale).language.toLowerCase();
-}, "extractLanguage");
-
 // src/RouterCore.tsx
 var _RouterCore = class _RouterCore {
   constructor(config, router, routes) {
@@ -1069,9 +1062,7 @@ var _RouterCore = class _RouterCore {
     return !!route;
   }
   defaultLanguage() {
-    return extractLanguage({
-      locale: this._config.entryRoute.localeOrLanguage
-    });
+    return this._config.routeEntry.language;
   }
   languages() {
     const languages = this._config.routes.map((route) => route.language);
@@ -1152,6 +1143,13 @@ var createRouterCore = /* @__PURE__ */ __name(({
 }) => {
   return RouterCore.new(config, router, routes);
 }, "createRouterCore");
+
+// src/Utils/extractLanguage.tsx
+var extractLanguage = /* @__PURE__ */ __name(({
+  locale
+}) => {
+  return new Intl.Locale(locale).language.toLowerCase();
+}, "extractLanguage");
 var _RouteI18n = class _RouteI18n {
   constructor(i18n) {
     this._loaded = /* @__PURE__ */ new Set();
@@ -1588,47 +1586,54 @@ __name(toCompiledMessages, "toCompiledMessages");
 var Router = /* @__PURE__ */ __name((props) => {
   const { config, translations, context } = props;
   const {
-    routes,
-    contexts,
+    routes: routesConfig,
+    routeContexts: routeContextsConfig,
+    routeRedirects: routeRedirectsConfig,
+    // TODO: Implement this later on...
     components,
-    entryRoute,
+    routeEntry,
     errorComponent,
     notFoundComponent
   } = config;
-  let idRoutes = {};
-  let realRoutes = {};
-  let redirectRoutes = {};
+  let routeContexts = {};
+  let routes = {};
+  let routeRedirects = {};
   const rootRoute = react.useMemo(
     () => reactRouter.createRootRouteWithContext()({
       component: /* @__PURE__ */ __name(() => /* @__PURE__ */ jsxRuntime.jsx(RouterOutlet, {}), "component"),
+      // TODO : Check if we want to offer Layout outside of router ?
       notFoundComponent,
       errorComponent,
       context: /* @__PURE__ */ __name(() => context, "context")
     }),
     [notFoundComponent, errorComponent, context]
   );
-  contexts.forEach((route) => {
-    idRoutes[route.id] = reactRouter.createRoute({
-      getParentRoute: /* @__PURE__ */ __name(() => {
-        if (route.contextId) {
-          return idRoutes[route.contextId];
-        }
-        return rootRoute;
-      }, "getParentRoute"),
-      id: route.id,
-      beforeLoad: /* @__PURE__ */ __name((opts) => {
-        if (route.beforeLoad) {
-          return route.beforeLoad({
-            ...opts,
-            context: opts.context
-          });
-        }
-      }, "beforeLoad"),
-      component: /* @__PURE__ */ __name(() => /* @__PURE__ */ jsxRuntime.jsx(RouterOutlet, {}), "component")
+  if (routeContextsConfig) {
+    routeContextsConfig.forEach((route) => {
+      routeContexts[route.id] = reactRouter.createRoute({
+        // Can be registered under another context route (ex: auth + role)
+        getParentRoute: /* @__PURE__ */ __name(() => {
+          if (route.contextId) {
+            return routeContexts[route.contextId];
+          }
+          return rootRoute;
+        }, "getParentRoute"),
+        id: route.id,
+        beforeLoad: /* @__PURE__ */ __name((opts) => {
+          if (route.beforeLoad) {
+            return route.beforeLoad({
+              ...opts,
+              context: opts.context
+            });
+          }
+        }, "beforeLoad"),
+        component: /* @__PURE__ */ __name(() => /* @__PURE__ */ jsxRuntime.jsx(RouterOutlet, {}), "component")
+        // TODO : Check if we want to offer Layout outside of router ?
+      });
     });
-  });
+  }
   const languageFirstRegion = {};
-  routes.forEach((route) => {
+  routesConfig.forEach((route) => {
     if (!languageFirstRegion[route.language] && route.regions.length > 0) {
       languageFirstRegion[route.language] = route.regions[0];
     }
@@ -1649,10 +1654,12 @@ var Router = /* @__PURE__ */ __name((props) => {
         localeOrLanguage: locale,
         path: route.path
       });
-      realRoutes[path] = reactRouter.createRoute({
+      routes[path] = reactRouter.createRoute({
+        // When a route is marked under a context, we put it there, else we add it to the root.
+        // It only makes sence to add a under another route when it requires a context beforeLoad to run.
         getParentRoute: /* @__PURE__ */ __name(() => {
           if (currentRouteConfig.contextId) {
-            return idRoutes[currentRouteConfig.contextId];
+            return routeContexts[currentRouteConfig.contextId];
           }
           return rootRoute;
         }, "getParentRoute"),
@@ -1678,11 +1685,8 @@ var Router = /* @__PURE__ */ __name((props) => {
           localeOrLanguage: locale,
           path: route.path
         });
-        redirectRoutes[redirectPath] = reactRouter.createRoute({
+        routeRedirects[redirectPath] = reactRouter.createRoute({
           getParentRoute: /* @__PURE__ */ __name(() => {
-            if (currentRouteConfig.contextId) {
-              return idRoutes[currentRouteConfig.contextId];
-            }
             return rootRoute;
           }, "getParentRoute"),
           path: redirectPath,
@@ -1691,16 +1695,16 @@ var Router = /* @__PURE__ */ __name((props) => {
           }, "loader")
         });
       }
-      if (entryRoute.id === route.id && entryRoute.language === route.language && entryRoute.region === region) {
+      if (routeEntry.id === route.id && routeEntry.language === route.language && routeEntry.region === region) {
         const entryPath = "/";
         const redirectToEntry = createSafeRouterPath({
           localeOrLanguage: route.language,
           path: route.path
         });
-        redirectRoutes[entryPath] = reactRouter.createRoute({
+        routeRedirects[entryPath] = reactRouter.createRoute({
           getParentRoute: /* @__PURE__ */ __name(() => {
             if (currentRouteConfig.contextId) {
-              return idRoutes[currentRouteConfig.contextId];
+              return routeContexts[currentRouteConfig.contextId];
             }
             return rootRoute;
           }, "getParentRoute"),
@@ -1713,9 +1717,9 @@ var Router = /* @__PURE__ */ __name((props) => {
     });
   });
   const routeList = [
-    ...Object.values(idRoutes),
-    ...Object.values(realRoutes),
-    ...Object.values(redirectRoutes)
+    ...Object.values(routeContexts),
+    ...Object.values(routes),
+    ...Object.values(routeRedirects)
   ];
   const routeTree = react.useMemo(() => {
     return rootRoute.addChildren(routeList);
@@ -1742,7 +1746,7 @@ var Router = /* @__PURE__ */ __name((props) => {
     () => new core.I18n({
       missing: /* @__PURE__ */ __name((locale, key) => {
         console.warn(`MISSING TRANSLATION: ${key} in ${locale}`);
-        return "";
+        return key;
       }, "missing")
     }),
     []
@@ -1882,18 +1886,18 @@ var useRouterBootstrapped = /* @__PURE__ */ __name(() => {
 
 // src/Utils/createRouterConfig.tsx
 var createRouterConfig = /* @__PURE__ */ __name(({
-  entryRoute,
+  routeEntry,
   components,
   routes,
-  contexts,
+  routeContexts,
   notFoundComponent,
   errorComponent
 }) => {
   return {
-    entryRoute,
+    routeEntry,
     components,
     routes,
-    contexts,
+    routeContexts,
     notFoundComponent,
     errorComponent
   };

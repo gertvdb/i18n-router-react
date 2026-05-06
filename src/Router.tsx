@@ -27,28 +27,36 @@ import { RouterOutlet } from "@/RouterOutlet";
 import { extractLocale } from "@/Utils/extractLocale";
 import { toCompiledMessages } from "@/Utils/toCompiledMessages";
 
+/**
+ * The Router component is the entry point for the localized routing system.
+ * It wraps the TanStack Router and provides i18n support via Lingui.
+ *
+ * @param props - The props for the Router component.
+ * @returns A RouterProvider wrapped with I18n and Context providers.
+ */
 export const Router = <TContext extends Record<string, unknown>>(
   props: RouterProps<TContext>,
 ) => {
   const { config, translations, context } = props;
   const {
-    routes,
-    contexts,
+    routes: routesConfig,
+    routeContexts: routeContextsConfig,
+    routeRedirects: routeRedirectsConfig, // TODO: Implement this later on...
     components,
-    entryRoute,
+    routeEntry,
     errorComponent,
     notFoundComponent,
   } = config;
 
-  let idRoutes: Record<string, AnyRoute> = {};
-  let realRoutes: Record<string, AnyRoute> = {};
-  let redirectRoutes: Record<string, AnyRoute> = {};
+  let routeContexts: Record<string, AnyRoute> = {};
+  let routes: Record<string, AnyRoute> = {};
+  let routeRedirects: Record<string, AnyRoute> = {};
 
   // REGISTER ROOT ROUTE
   const rootRoute = useMemo(
     () =>
       createRootRouteWithContext<TContext>()({
-        component: () => <RouterOutlet />,
+        component: () => <RouterOutlet />, // TODO : Check if we want to offer Layout outside of router ?
         notFoundComponent: notFoundComponent,
         errorComponent: errorComponent,
         context: () => context,
@@ -58,41 +66,47 @@ export const Router = <TContext extends Record<string, unknown>>(
   // END REGISTER ROOT ROUTE
 
   // REGISTER CONTEXT ROUTES
-  contexts.forEach((route) => {
-    idRoutes[route.id] = createRoute({
-      getParentRoute: () => {
-        if (route.contextId) {
-          return idRoutes[route.contextId];
-        }
-        return rootRoute;
-      },
-      id: route.id,
-      beforeLoad: (opts) => {
-        if (route.beforeLoad) {
-          return route.beforeLoad({
-            ...opts,
-            context: opts.context as TContext,
-          });
-        }
-      },
-      component: () => <RouterOutlet />,
+  if (routeContextsConfig) {
+    routeContextsConfig.forEach((route) => {
+      routeContexts[route.id] = createRoute({
+        // Can be registered under another context route (ex: auth + role)
+        getParentRoute: () => {
+          if (route.contextId) {
+            return routeContexts[route.contextId];
+          }
+          return rootRoute;
+        },
+        id: route.id,
+        beforeLoad: (opts) => {
+          if (route.beforeLoad) {
+            return route.beforeLoad({
+              ...opts,
+              context: opts.context as TContext,
+            });
+          }
+        },
+        component: () => <RouterOutlet />, // TODO : Check if we want to offer Layout outside of router ?
+      });
     });
-  });
+  }
   // END REGISTER CONTEXT ROUTES
 
   // REGISTER ROUTES
   const languageFirstRegion: Record<string, string> = {};
 
-  routes.forEach((route) => {
+  routesConfig.forEach((route) => {
+    // Build array with first defined region per language.
     if (!languageFirstRegion[route.language] && route.regions.length > 0) {
       languageFirstRegion[route.language] = route.regions[0];
     }
 
+    // Skip this route if no configuration is found, should not happen
     const currentRouteConfig = components[route.id];
     if (!currentRouteConfig) {
-      return; // Skip this route if no configuration is found.
+      return;
     }
 
+    // Make sure at least one region is defined.
     const regions = route.regions;
     if (regions.length === 0) {
       throw new Error(
@@ -104,6 +118,7 @@ export const Router = <TContext extends Record<string, unknown>>(
       );
     }
 
+    // For each region pr language create the routes.
     regions.forEach((region: IRouteRegion) => {
       const locale = toLocale({ language: route.language, region: region });
 
@@ -114,10 +129,12 @@ export const Router = <TContext extends Record<string, unknown>>(
         path: route.path,
       });
 
-      realRoutes[path] = createRoute({
+      routes[path] = createRoute({
+        // When a route is marked under a context, we put it there, else we add it to the root.
+        // It only makes sence to add a under another route when it requires a context beforeLoad to run.
         getParentRoute: () => {
           if (currentRouteConfig.contextId) {
-            return idRoutes[currentRouteConfig.contextId];
+            return routeContexts[currentRouteConfig.contextId];
           }
           return rootRoute;
         },
@@ -135,6 +152,7 @@ export const Router = <TContext extends Record<string, unknown>>(
         },
       }) as AnyRoute;
 
+      // Provide redirect to the language route in
       if (isFirstRegion) {
         const redirectPath = createSafeRouterPath({
           localeOrLanguage: route.language,
@@ -146,11 +164,8 @@ export const Router = <TContext extends Record<string, unknown>>(
           path: route.path,
         });
 
-        redirectRoutes[redirectPath] = createRoute({
+        routeRedirects[redirectPath] = createRoute({
           getParentRoute: () => {
-            if (currentRouteConfig.contextId) {
-              return idRoutes[currentRouteConfig.contextId];
-            }
             return rootRoute;
           },
           path: redirectPath,
@@ -162,9 +177,9 @@ export const Router = <TContext extends Record<string, unknown>>(
 
       // entryRoute
       if (
-        entryRoute.id === route.id &&
-        entryRoute.language === route.language &&
-        entryRoute.region === region
+        routeEntry.id === route.id &&
+        routeEntry.language === route.language &&
+        routeEntry.region === region
       ) {
         const entryPath = "/";
         const redirectToEntry = createSafeRouterPath({
@@ -172,10 +187,10 @@ export const Router = <TContext extends Record<string, unknown>>(
           path: route.path,
         });
 
-        redirectRoutes[entryPath] = createRoute({
+        routeRedirects[entryPath] = createRoute({
           getParentRoute: () => {
             if (currentRouteConfig.contextId) {
-              return idRoutes[currentRouteConfig.contextId];
+              return routeContexts[currentRouteConfig.contextId];
             }
             return rootRoute;
           },
@@ -190,9 +205,9 @@ export const Router = <TContext extends Record<string, unknown>>(
   // END REGISTER ROUTES
 
   const routeList = [
-    ...Object.values(idRoutes),
-    ...Object.values(realRoutes),
-    ...Object.values(redirectRoutes),
+    ...Object.values(routeContexts),
+    ...Object.values(routes),
+    ...Object.values(routeRedirects),
   ];
 
   // BUILD ROUTER
@@ -228,7 +243,7 @@ export const Router = <TContext extends Record<string, unknown>>(
       new LinguiI18n({
         missing: (locale, key) => {
           console.warn(`MISSING TRANSLATION: ${key} in ${locale}`);
-          return "";
+          return key;
         },
       }),
     [],

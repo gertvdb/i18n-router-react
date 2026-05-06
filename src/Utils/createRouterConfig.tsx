@@ -12,25 +12,25 @@ import type {
 import React from "react";
 
 export const createRouterConfig = ({
-  entryRoute,
+  routeEntry,
   components,
   routes,
-  contexts,
+  routeContexts,
   notFoundComponent,
   errorComponent,
 }: {
-  entryRoute: IRouteEntry;
+  routeEntry: IRouteEntry;
   components: IRouteComponents;
   routes: IRoutes;
-  contexts: IRouteContexts;
+  routeContexts: IRouteContexts;
   notFoundComponent: (props: NotFoundRouteProps) => React.ReactNode;
   errorComponent: (props: ErrorComponentProps) => React.ReactNode;
 }): IRouterConfig => {
   return {
-    entryRoute,
+    routeEntry,
     components,
     routes,
-    contexts,
+    routeContexts,
     notFoundComponent,
     errorComponent,
   };

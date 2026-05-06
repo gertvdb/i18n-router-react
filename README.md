@@ -1,3 +1,114 @@
-# Your Project
+# Localized React Router
 
-Explain your project here.
+A powerful, localized routing solution for React applications, built on top of [@tanstack/react-router](https://tanstack.com/router) and [Lingui](https://lingui.dev/).
+
+## Features
+
+- **Multi-region & Multi-language**: Handle routes like `/en-us/about`, `/fr-be/about`, etc., with ease.
+- **Type-safe Routing**: Leverages TanStack Router for full type safety.
+- **Integrated i18n**: Automatic translation loading and language switching using Lingui.
+- **Context-based Routes**: Group routes under shared contexts (e.g., authentication, roles) with `beforeLoad` hooks.
+- **Dynamic Path Generation**: Utilities to generate localized paths and URLs.
+
+## Installation
+
+```bash
+# Using pnpm
+pnpm add @gertvdb/react-router
+```
+
+## Basic Usage
+
+### 1. Define your components
+
+```tsx
+// Home.tsx
+export const Home = () => <h1>Home</h1>;
+
+// About.tsx
+export const About = () => <h1>About</h1>;
+```
+
+### 2. Configure the Router
+
+```tsx
+import { Router, IRouterConfig } from '@gertvdb/react-router';
+
+const config: IRouterConfig = {
+  components: {
+    home: { component: Home },
+    about: { component: About },
+  },
+  routes: [
+    { id: 'home', language: 'en', regions: ['us', 'gb'], path: '/' },
+    { id: 'home', language: 'nl', regions: ['be', 'nl'], path: '/' },
+    { id: 'about', language: 'en', regions: ['us', 'gb'], path: '/about' },
+    { id: 'about', language: 'nl', regions: ['be', 'nl'], path: '/over' },
+  ],
+  routeEntry: { id: 'home', language: 'en', region: 'us' },
+  notFoundComponent: () => <div>Not Found</div>,
+  errorComponent: () => <div>Error</div>,
+};
+
+const translations = async (lang: string) => {
+  // Load your translations here
+  return import(`./locales/${lang}.json`);
+};
+
+export const App = () => (
+  <Router 
+    config={config} 
+    translations={translations} 
+    context={{}} 
+  />
+);
+```
+
+## Key Concepts
+
+### Routes vs Components
+
+- **Routes**: Define the structure, paths, and supported locales.
+- **Components**: Define the actual React components and data loaders for each route ID.
+
+### Context Routes
+
+Use `routeContexts` to define shared logic (like authentication) for a group of routes.
+
+```tsx
+const config: IRouterConfig = {
+  // ...
+  routeContexts: [
+    {
+      id: 'auth',
+      beforeLoad: async ({ context }) => {
+        if (!context.isAuthenticated) {
+          throw redirect({ to: '/login' });
+        }
+      },
+    },
+  ],
+  components: {
+    dashboard: { 
+      component: Dashboard,
+      contextId: 'auth' // This route now requires 'auth' context
+    },
+  },
+};
+```
+
+### Navigation
+
+Access the router instance via `useRouter` to navigate programmatically.
+
+```tsx
+const router = useRouter();
+
+router.navigate({
+  to: { id: 'about', language: 'en', region: 'us' }
+});
+```
+
+## License
+
+MIT

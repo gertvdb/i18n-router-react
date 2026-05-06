@@ -4,17 +4,51 @@ import type {
   NotFoundRouteProps,
 } from "@tanstack/react-router";
 
+/**
+ * ID of a route context.
+ */
 export type IRouteContextId = string;
-export type IRouteId = string;
-export type IRouteLocale = string; // nl-nl, en-nl, ...
-export type IRouteRegion = string; // be , fr
-export type IRouteLanguage = string; // nl, fr
 
+/**
+ * ID of a route.
+ */
+export type IRouteId = string;
+
+/**
+ * Locale string in the format "language-region" (e.g., "nl-be").
+ */
+export type IRouteLocale = string;
+
+/**
+ * Region identifier (e.g., "be", "fr").
+ */
+export type IRouteRegion = string;
+
+/**
+ * Language identifier (e.g., "nl", "fr").
+ */
+export type IRouteLanguage = string;
+
+/**
+ * Path string for a route.
+ */
 export type IRoutePath = string;
 
+/**
+ * Configuration for a route component.
+ */
 export interface IRouteComponent<TLoaderData = any, TContext = any> {
+  /**
+   * The React component to render for this route.
+   */
   component: () => React.ReactNode;
+  /**
+   * Optional context ID if this route should be nested under a specific context.
+   */
   contextId?: IRouteContextId;
+  /**
+   * Optional loader function to fetch data for this route.
+   */
   loader?: (
     params: any,
     opts: { context: TContext },
@@ -23,40 +57,93 @@ export interface IRouteComponent<TLoaderData = any, TContext = any> {
   ) => Promise<TLoaderData> | TLoaderData;
 }
 
+/**
+ * A record of route components indexed by their route ID.
+ */
 export type IRouteComponents<TContext = any> = Record<
   IRouteId,
   IRouteComponent<any, TContext>
 >;
 
+/**
+ * Represents a route identified by its ID and locale.
+ */
 export interface ILocaleRoute {
   id: IRouteId;
   locale: IRouteLocale;
 }
 
+/**
+ * Definition of a route including its path and supported languages/regions.
+ */
 export interface IRoute {
+  /**
+   * Unique ID for the route.
+   */
   id: IRouteId;
+  /**
+   * Language of this route definition.
+   */
   language: IRouteLanguage;
+  /**
+   * List of regions supported by this route definition.
+   */
   regions: IRouteRegion[];
+  /**
+   * The URL path for this route.
+   */
   path: IRoutePath;
 }
 
-export interface IRouteContext<TRouteContext = any, TContext = any> {
+/**
+ * Definition of a context route, typically used for wrapping other routes with shared logic or data.
+ */
+export interface IContextRoute<TRouteContext = any, TContext = any> {
+  /**
+   * Unique ID for the context route.
+   */
   id: IRouteContextId;
+  /**
+   * Optional parent context ID.
+   */
   contextId?: IRouteContextId;
+  /**
+   * Function called before the route is loaded, often used for authentication or data pre-fetching.
+   */
   beforeLoad?: (opts: {
     context: TContext;
   }) => Promise<TRouteContext> | TRouteContext | void;
 }
 
-export type IRoutes = IRoute[];
-export type IRouteContexts = IRouteContext[];
+/**
+ * Redirect configuration.
+ */
+export interface IRouteRedirect {
+  from: IRoutePath;
+  to: ILocaleRoute;
+}
 
+export type IRoutes = IRoute[];
+export type IRouteContexts = IContextRoute[];
+export type IRouteRedirects = IRouteRedirect[];
+
+/**
+ * Defines the initial entry point of the application.
+ */
 export interface IRouteEntry {
   id: IRouteId;
   language: IRouteLanguage;
   region: IRouteRegion;
 }
 
+export interface IRouteTo {
+  id: IRouteId;
+  localeOrLanguage: IRouteLanguage | IRouteLocale;
+}
+
+/**
+ * Layout route definition.
+ */
 export interface ILayoutRoute<TRouteContext = any, TContext = any> {
   id: IRouteId;
   beforeLoad?: (opts: {
@@ -64,19 +151,59 @@ export interface ILayoutRoute<TRouteContext = any, TContext = any> {
   }) => Promise<TRouteContext> | TRouteContext | void;
 }
 
+/**
+ * Main configuration object for the Router.
+ */
 export interface IRouterConfig<TContext = any> {
+  /**
+   * Mapping of route IDs to their components and loaders.
+   */
   components: IRouteComponents<TContext>;
+  /**
+   * List of route definitions.
+   */
   routes: IRoutes;
-  contexts: IRouteContexts;
-  entryRoute: IRouteEntry;
+  /**
+   * The default entry route.
+   */
+  routeEntry: IRouteEntry;
+  /**
+   * Optional list of context routes.
+   */
+  routeContexts?: IRouteContexts;
+  /**
+   * Optional list of redirects.
+   */
+  routeRedirects?: IRouteRedirects;
+  /**
+   * Component to render when no route is found.
+   */
   notFoundComponent: (props: NotFoundRouteProps) => React.ReactNode;
+  /**
+   * Component to render when an error occurs during routing.
+   */
   errorComponent: (props: ErrorComponentProps) => React.ReactNode;
 }
 
+/**
+ * The core Router interface providing navigation and path utilities.
+ */
 export interface IRouter {
+  /**
+   * Reloads the current route.
+   */
   reload(): void;
+  /**
+   * Checks if there is a history to go back to.
+   */
   canGoBack(): boolean;
+  /**
+   * Navigates back in history.
+   */
   goBack(): Promise<void>;
+  /**
+   * Navigates to a specific route.
+   */
   navigate<T>({
     to,
     from,
@@ -87,8 +214,17 @@ export interface IRouter {
     state,
     target,
   }: NavigateParams<T>): Promise<void>;
+  /**
+   * Generates a href for a given route.
+   */
   href({ id, locale, query, params, hash }: HrefParams): string;
+  /**
+   * Generates a relative path for a given route.
+   */
   relative({ id, locale, query, params, hash }: HrefParams): string;
+  /**
+   * Generates an absolute URL for a given route.
+   */
   absolute({
     baseUrl,
     id,
@@ -97,28 +233,76 @@ export interface IRouter {
     params,
     hash,
   }: AbsoluteHrefParams): string;
+  /**
+   * Gets the path for a route ID and locale or language/region.
+   */
   path(id: IRouteId, locale: IRouteLocale): string;
   path(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
+  /**
+   * Gets the internal TanStack route ID.
+   */
   id(id: IRouteId, locale: IRouteLocale): string;
   id(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
+  /**
+   * Checks if a route exists for the given ID and locale.
+   */
   hasRoute(id: IRouteId, locale: IRouteLocale): boolean;
+  /**
+   * Gets the default application language.
+   */
   defaultLanguage(): IRouteLanguage;
+  /**
+   * Gets all supported languages.
+   */
   languages(): IRouteLanguage[];
+  /**
+   * Gets a mapping of languages to their supported regions.
+   */
   regionsByLanguage(): Record<IRouteLanguage, IRouteRegion[]>;
+  /**
+   * Checks if the router has finished bootstrapping.
+   */
   isBootstrapped(): boolean;
 }
 
 export type NavigateMethod = "replace" | "push";
 export type NavigateTarget = "_blank" | "_self";
 
+/**
+ * Parameters for the navigate function.
+ */
 export type NavigateParams<T> = {
-  to: IRouteEntry;
+  /**
+   * The target route entry.
+   */
+  to: IRouteTo;
+  /**
+   * Optional "from" path.
+   */
   from?: string;
+  /**
+   * Optional search query parameters.
+   */
   query?: Record<string, unknown>;
+  /**
+   * Optional path parameters.
+   */
   params?: Record<string, unknown>;
+  /**
+   * Optional URL hash.
+   */
   hash?: string;
+  /**
+   * Navigation method ("push" or "replace").
+   */
   method?: NavigateMethod;
+  /**
+   * Optional state to pass to the target route.
+   */
   state?: T;
+  /**
+   * Optional target for the link (e.g., "_blank").
+   */
   target?: NavigateTarget;
 };
 
@@ -126,6 +310,9 @@ export type AbsoluteHrefParams = {
   baseUrl: string;
 } & HrefParams;
 
+/**
+ * Parameters for generating a href.
+ */
 export type HrefParams = {
   id: IRouteId;
   locale: IRouteLocale;
@@ -134,24 +321,63 @@ export type HrefParams = {
   hash?: string;
 };
 
+/**
+ * Interface for i18n support within the router.
+ */
 export interface IRouteI18N {
+  /**
+   * Translates a key to a React element.
+   */
   trans: (
     key: string,
     variables: Record<string, unknown>,
   ) => React.ReactElement | null;
+  /**
+   * Translates a key to a string.
+   */
   t: (key: string, variables?: Record<string, unknown>) => string;
+  /**
+   * Activates a specific language.
+   */
   activate(language: IRouteLanguage): void;
+  /**
+   * Gets the current language.
+   */
   current(): IRouteLanguage;
+  /**
+   * Subscribes to language changes.
+   */
   subscribe(listener: () => void): () => void;
+  /**
+   * Checks if a language's translations are loaded.
+   */
   isLoaded(language: IRouteLanguage): boolean;
+  /**
+   * Loads translations for a language.
+   */
   load(language: IRouteLanguage, messages: ITranslations): void;
 }
 
+/**
+ * Record of translation keys and their values.
+ */
 export type ITranslations = Record<string, string>;
 
+/**
+ * Props for the Router component.
+ */
 export interface RouterProps<TContext = Record<string, unknown>> {
+  /**
+   * Initial context for the router.
+   */
   context: TContext;
+  /**
+   * Router configuration.
+   */
   config: IRouterConfig<TContext>;
+  /**
+   * Function to load translations for a given language.
+   */
   translations(
     language: IRouteLanguage,
   ): ITranslations | Promise<ITranslations>;
