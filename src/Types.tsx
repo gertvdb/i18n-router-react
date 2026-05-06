@@ -37,7 +37,7 @@ export type IRoutePath = string;
 /**
  * Configuration for a route component.
  */
-export interface IRouteComponent<TLoaderData = any, TContext = any> {
+export interface IRouteComponent<TLoaderData = any, TServices = any> {
   /**
    * The React component to render for this route.
    */
@@ -46,12 +46,13 @@ export interface IRouteComponent<TLoaderData = any, TContext = any> {
    * Optional context ID if this route should be nested under a specific context.
    */
   contextId?: IRouteContextId;
+
   /**
    * Optional loader function to fetch data for this route.
    */
   loader?: (
     params: any,
-    opts: { context: TContext },
+    opts: { services: TServices },
     language: IRouteLanguage,
     region: IRouteRegion,
   ) => Promise<TLoaderData> | TLoaderData;
@@ -98,20 +99,22 @@ export interface IRoute {
 /**
  * Definition of a context route, typically used for wrapping other routes with shared logic or data.
  */
-export interface IContextRoute<TRouteContext = any, TContext = any> {
+export interface IContextRoute<TRouteContext = any, TServices = any> {
   /**
    * Unique ID for the context route.
    */
   id: IRouteContextId;
+
   /**
    * Optional parent context ID.
    */
   contextId?: IRouteContextId;
+
   /**
    * Function called before the route is loaded, often used for authentication or data pre-fetching.
    */
   beforeLoad?: (opts: {
-    context: TContext;
+    services: TServices;
   }) => Promise<TRouteContext> | TRouteContext | void;
 }
 
@@ -142,23 +145,13 @@ export interface IRouteTo {
 }
 
 /**
- * Layout route definition.
- */
-export interface ILayoutRoute<TRouteContext = any, TContext = any> {
-  id: IRouteId;
-  beforeLoad?: (opts: {
-    context: TContext;
-  }) => Promise<TRouteContext> | TRouteContext | void;
-}
-
-/**
  * Main configuration object for the Router.
  */
-export interface IRouterConfig<TContext = any> {
+export interface IRouterConfig<TServices = any> {
   /**
    * Mapping of route IDs to their components and loaders.
    */
-  components: IRouteComponents<TContext>;
+  components: IRouteComponents<TServices>;
   /**
    * List of route definitions.
    */
@@ -366,21 +359,23 @@ export type ITranslations = Record<string, string>;
 /**
  * Props for the Router component.
  */
-export interface RouterProps<TContext = Record<string, unknown>> {
+export interface RouterProps<TServices = Record<string, unknown>> {
   /**
-   * Initial context for the router.
+   * Initial services for the router.
    */
-  context: TContext;
+  services: TServices;
+
   /**
    * Router configuration.
    */
-  config: IRouterConfig<TContext>;
+  config: IRouterConfig<TServices>;
+
   /**
    * Function to load translations for a given language.
    */
   translations(
     language: IRouteLanguage,
-    context: TContext,
+    services: TServices,
   ): ITranslations | Promise<ITranslations>;
 }
 

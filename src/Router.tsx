@@ -34,10 +34,11 @@ import { toCompiledMessages } from "@/Utils/toCompiledMessages";
  * @param props - The props for the Router component.
  * @returns A RouterProvider wrapped with I18n and Context providers.
  */
-export const Router = <TContext extends Record<string, unknown>>(
-  props: RouterProps<TContext>,
+export const Router = <TServices extends Record<string, unknown>>(
+  props: RouterProps<TServices>,
 ) => {
-  const { config, translations, context } = props;
+  const { config, translations, services } = props;
+
   const {
     routes: routesConfig,
     routeContexts: routeContextsConfig,
@@ -55,13 +56,13 @@ export const Router = <TContext extends Record<string, unknown>>(
   // REGISTER ROOT ROUTE
   const rootRoute = useMemo(
     () =>
-      createRootRouteWithContext<TContext>()({
+      createRootRouteWithContext<TServices>()({
         component: () => <RouterOutlet />, // TODO : Check if we want to offer Layout outside of router ?
         notFoundComponent: notFoundComponent,
         errorComponent: errorComponent,
-        context: () => context,
+        context: () => services, // Pass the initial services to the router, in tanstack these are called context.
       }),
-    [notFoundComponent, errorComponent, context],
+    [notFoundComponent, errorComponent, services],
   );
   // END REGISTER ROOT ROUTE
 
@@ -81,7 +82,7 @@ export const Router = <TContext extends Record<string, unknown>>(
           if (route.beforeLoad) {
             return route.beforeLoad({
               ...opts,
-              context: opts.context as TContext,
+              services: opts.context as TServices,
             });
           }
         },
@@ -144,7 +145,7 @@ export const Router = <TContext extends Record<string, unknown>>(
           if (currentRouteConfig.loader) {
             return currentRouteConfig.loader(
               params,
-              { context },
+              { services: context },
               route.language,
               region,
             );
@@ -222,14 +223,14 @@ export const Router = <TContext extends Record<string, unknown>>(
         trailingSlash: "never",
         defaultNotFoundComponent: notFoundComponent,
         defaultErrorComponent: errorComponent,
-        context: context,
+        context: services,
       }),
-    [routeTree, notFoundComponent, errorComponent, context],
+    [routeTree, notFoundComponent, errorComponent, services],
   );
 
   const router: IRouter = useMemo(
     () =>
-      createRouterCore<TContext, typeof tanstackRouter>({
+      createRouterCore<TServices, typeof tanstackRouter>({
         config: config,
         router: tanstackRouter,
         routes: routeList,
@@ -270,21 +271,21 @@ export const Router = <TContext extends Record<string, unknown>>(
         ? extractLanguage({ locale: extractedLocale })
         : router.defaultLanguage();
 
-      const messages = await translations(lang, context);
+      const messages = await translations(lang, services);
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages as ITranslations);
       linguiI18N.activate(lang);
       i18n.load(lang, compiledMessages as ITranslations);
     })();
-  }, [i18n, linguiI18N, translations, router, context]);
+  }, [i18n, linguiI18N, translations, router, services]);
 
   useEffect(() => {
     router.languages().forEach(async (lang) => {
-      const messages = await translations(lang, context);
+      const messages = await translations(lang, services);
       const compiledMessages = toCompiledMessages(messages);
       i18n.load(lang, compiledMessages as ITranslations);
     });
-  }, [i18n, translations, router, context]);
+  }, [i18n, translations, router, services]);
 
   return (
     <RouteI18nContext.Provider value={i18n}>

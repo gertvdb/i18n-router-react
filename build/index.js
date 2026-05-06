@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useEffect, useSyncExternalStore } from 'react';
-import { useRouterState, createRootRouteWithContext, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, useLoaderData, Outlet } from '@tanstack/react-router';
+import { useRouterState, createRootRouteWithContext, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, useLoaderData, useRouteContext, Outlet } from '@tanstack/react-router';
 import { I18n } from '@lingui/core';
 import { I18nProvider, Trans } from '@lingui/react';
 import { jsx } from 'react/jsx-runtime';
@@ -1582,7 +1582,7 @@ function toCompiledMessages(rawMessages) {
 }
 __name(toCompiledMessages, "toCompiledMessages");
 var Router = /* @__PURE__ */ __name((props) => {
-  const { config, translations, context } = props;
+  const { config, translations, services } = props;
   const {
     routes: routesConfig,
     routeContexts: routeContextsConfig,
@@ -1602,9 +1602,10 @@ var Router = /* @__PURE__ */ __name((props) => {
       // TODO : Check if we want to offer Layout outside of router ?
       notFoundComponent,
       errorComponent,
-      context: /* @__PURE__ */ __name(() => context, "context")
+      context: /* @__PURE__ */ __name(() => services, "context")
+      // Pass the initial services to the router, in tanstack these are called context.
     }),
-    [notFoundComponent, errorComponent, context]
+    [notFoundComponent, errorComponent, services]
   );
   if (routeContextsConfig) {
     routeContextsConfig.forEach((route) => {
@@ -1621,7 +1622,7 @@ var Router = /* @__PURE__ */ __name((props) => {
           if (route.beforeLoad) {
             return route.beforeLoad({
               ...opts,
-              context: opts.context
+              services: opts.context
             });
           }
         }, "beforeLoad"),
@@ -1663,11 +1664,11 @@ var Router = /* @__PURE__ */ __name((props) => {
         }, "getParentRoute"),
         path,
         component: currentRouteConfig.component,
-        loader: /* @__PURE__ */ __name(async ({ params, context: context2 }) => {
+        loader: /* @__PURE__ */ __name(async ({ params, context }) => {
           if (currentRouteConfig.loader) {
             return currentRouteConfig.loader(
               params,
-              { context: context2 },
+              { services: context },
               route.language,
               region
             );
@@ -1728,9 +1729,9 @@ var Router = /* @__PURE__ */ __name((props) => {
       trailingSlash: "never",
       defaultNotFoundComponent: notFoundComponent,
       defaultErrorComponent: errorComponent,
-      context
+      context: services
     }),
-    [routeTree, notFoundComponent, errorComponent, context]
+    [routeTree, notFoundComponent, errorComponent, services]
   );
   const router = useMemo(
     () => createRouterCore({
@@ -1763,20 +1764,20 @@ var Router = /* @__PURE__ */ __name((props) => {
         pathname: window.location.pathname
       });
       const lang = extractedLocale ? extractLanguage({ locale: extractedLocale }) : router.defaultLanguage();
-      const messages = await translations(lang, context);
+      const messages = await translations(lang, services);
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages);
       linguiI18N.activate(lang);
       i18n.load(lang, compiledMessages);
     })();
-  }, [i18n, linguiI18N, translations, router, context]);
+  }, [i18n, linguiI18N, translations, router, services]);
   useEffect(() => {
     router.languages().forEach(async (lang) => {
-      const messages = await translations(lang, context);
+      const messages = await translations(lang, services);
       const compiledMessages = toCompiledMessages(messages);
       i18n.load(lang, compiledMessages);
     });
-  }, [i18n, translations, router, context]);
+  }, [i18n, translations, router, services]);
   return /* @__PURE__ */ jsx(RouteI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsx(I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsx(RouterCoreContext.Provider, { value: router, children: /* @__PURE__ */ jsx(RouterProvider, { router: tanstackRouter }) }) }) });
 }, "Router");
 var useRouter = /* @__PURE__ */ __name(() => {
@@ -1858,6 +1859,26 @@ function useRouteLoaderData({
   return useLoaderData({ from: id });
 }
 __name(useRouteLoaderData, "useRouteLoaderData");
+function useRouterService({
+  router,
+  route,
+  select
+}) {
+  const id = useMemo(() => {
+    if (router.hasRoute(route.id, route.locale)) {
+      return router.id(route.id, route.locale);
+    }
+    return route.id;
+  }, [route.id, route.locale, router]);
+  if (select) {
+    return useRouteContext({
+      from: id,
+      select
+    });
+  }
+  return useRouteContext({ from: id });
+}
+__name(useRouterService, "useRouterService");
 var useRouteIsTransitioning = /* @__PURE__ */ __name(() => {
   const { isTransitioning } = useRouterState({
     select: /* @__PURE__ */ __name((state) => ({
@@ -1901,6 +1922,6 @@ var createRouterConfig = /* @__PURE__ */ __name(({
   };
 }, "createRouterConfig");
 
-export { RouteI18nContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useTranslationLoaded };
+export { RouteI18nContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterService, useTranslationLoaded };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

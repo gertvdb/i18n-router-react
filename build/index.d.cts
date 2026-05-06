@@ -30,7 +30,7 @@ type IRoutePath = string;
 /**
  * Configuration for a route component.
  */
-interface IRouteComponent<TLoaderData = any, TContext = any> {
+interface IRouteComponent<TLoaderData = any, TServices = any> {
     /**
      * The React component to render for this route.
      */
@@ -43,7 +43,7 @@ interface IRouteComponent<TLoaderData = any, TContext = any> {
      * Optional loader function to fetch data for this route.
      */
     loader?: (params: any, opts: {
-        context: TContext;
+        services: TServices;
     }, language: IRouteLanguage, region: IRouteRegion) => Promise<TLoaderData> | TLoaderData;
 }
 /**
@@ -81,7 +81,7 @@ interface IRoute {
 /**
  * Definition of a context route, typically used for wrapping other routes with shared logic or data.
  */
-interface IContextRoute<TRouteContext = any, TContext = any> {
+interface IContextRoute<TRouteContext = any, TServices = any> {
     /**
      * Unique ID for the context route.
      */
@@ -94,7 +94,7 @@ interface IContextRoute<TRouteContext = any, TContext = any> {
      * Function called before the route is loaded, often used for authentication or data pre-fetching.
      */
     beforeLoad?: (opts: {
-        context: TContext;
+        services: TServices;
     }) => Promise<TRouteContext> | TRouteContext | void;
 }
 /**
@@ -120,22 +120,13 @@ interface IRouteTo {
     localeOrLanguage: IRouteLanguage | IRouteLocale;
 }
 /**
- * Layout route definition.
- */
-interface ILayoutRoute<TRouteContext = any, TContext = any> {
-    id: IRouteId;
-    beforeLoad?: (opts: {
-        context: TContext;
-    }) => Promise<TRouteContext> | TRouteContext | void;
-}
-/**
  * Main configuration object for the Router.
  */
-interface IRouterConfig<TContext = any> {
+interface IRouterConfig<TServices = any> {
     /**
      * Mapping of route IDs to their components and loaders.
      */
-    components: IRouteComponents<TContext>;
+    components: IRouteComponents<TServices>;
     /**
      * List of route definitions.
      */
@@ -316,19 +307,19 @@ type ITranslations = Record<string, string>;
 /**
  * Props for the Router component.
  */
-interface RouterProps<TContext = Record<string, unknown>> {
+interface RouterProps<TServices = Record<string, unknown>> {
     /**
-     * Initial context for the router.
+     * Initial services for the router.
      */
-    context: TContext;
+    services: TServices;
     /**
      * Router configuration.
      */
-    config: IRouterConfig<TContext>;
+    config: IRouterConfig<TServices>;
     /**
      * Function to load translations for a given language.
      */
-    translations(language: IRouteLanguage, context: TContext): ITranslations | Promise<ITranslations>;
+    translations(language: IRouteLanguage, services: TServices): ITranslations | Promise<ITranslations>;
 }
 interface RoutePathProps {
     router: IRouter;
@@ -354,7 +345,7 @@ interface IRouteQueryProps<T, TSelected = T> extends RoutePathProps {
  * @param props - The props for the Router component.
  * @returns A RouterProvider wrapped with I18n and Context providers.
  */
-declare const Router: <TContext extends Record<string, unknown>>(props: RouterProps<TContext>) => react_jsx_runtime.JSX.Element;
+declare const Router: <TServices extends Record<string, unknown>>(props: RouterProps<TServices>) => react_jsx_runtime.JSX.Element;
 
 declare const RouterCoreContext: React.Context<IRouter | undefined>;
 
@@ -375,6 +366,8 @@ declare function useRouteParams<T, TSelected = T>({ router, route, select, }: Ro
 declare function useRouteQuery<T, TSelected = T>({ router, route, select, }: IRouteQueryProps<T, TSelected>): TSelected;
 
 declare function useRouteLoaderData<T, TSelected = T>({ router, route, select, }: RouteLoaderDataProps<T, TSelected>): TSelected | T;
+
+declare function useRouterService<T, TSelected = T>({ router, route, select, }: RouteContextProps<T, TSelected>): TSelected | T;
 
 declare const useRouteIsTransitioning: () => boolean;
 
@@ -404,4 +397,4 @@ declare const toLocale: ({ language, region, }: {
     region: IRouteRegion;
 }) => IRouteLocale;
 
-export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILayoutRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteI18N, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, RouteI18nContext, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, Router, RouterCoreContext, type RouterProps, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useTranslationLoaded };
+export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteI18N, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, RouteI18nContext, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, Router, RouterCoreContext, type RouterProps, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterService, useTranslationLoaded };

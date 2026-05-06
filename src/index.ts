@@ -15,6 +15,7 @@ export { useRouteRegion } from "./Hooks/useRouteRegion";
 export { useRouteParams } from "./Hooks/useRouteParams";
 export { useRouteQuery } from "./Hooks/useRouteQuery";
 export { useRouteLoaderData } from "@/Hooks/useRouteLoaderData";
+export { useRouterService } from "@/Hooks/useRouterService";
 
 export { useRouteIsTransitioning } from "./Hooks/useRouteIsTransitioning";
 export { useTranslationLoaded } from "./Hooks/useTranslationLoaded";
