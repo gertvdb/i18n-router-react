@@ -270,7 +270,7 @@ type HrefParams = {
 /**
  * Interface for i18n support within the router.
  */
-interface IRouteI18N {
+interface IRouterI18N {
     /**
      * Translates a key to a React element.
      */
@@ -337,6 +337,9 @@ interface RouteLoaderDataProps<T, TSelected = T> extends RoutePathProps {
 interface IRouteQueryProps<T, TSelected = T> extends RoutePathProps {
     select?: (match: T) => TSelected;
 }
+interface UseRouterServiceProps<T, R = any> {
+    serviceToken: T;
+}
 
 /**
  * The Router component is the entry point for the localized routing system.
@@ -349,11 +352,7 @@ declare const Router: <TServices extends Record<string, unknown>>(props: RouterP
 
 declare const RouterCoreContext: React.Context<IRouter | undefined>;
 
-declare const RouteI18nContext: React.Context<IRouteI18N | undefined>;
-
-declare const useRouter: () => IRouter;
-
-declare const useRouteI18n: () => IRouteI18N;
+declare const RouterI18nContext: React.Context<IRouterI18N | undefined>;
 
 declare const useRouteLanguage: () => IRouteLanguage;
 
@@ -367,13 +366,19 @@ declare function useRouteQuery<T, TSelected = T>({ router, route, select, }: IRo
 
 declare function useRouteLoaderData<T, TSelected = T>({ router, route, select, }: RouteLoaderDataProps<T, TSelected>): TSelected | T;
 
-declare function useRouterService<T, TSelected = T>({ router, route, select, }: RouteContextProps<T, TSelected>): TSelected | T;
+declare function useRouteContext<T, TSelected = T>({ router, route, select, }: RouteContextProps<T, TSelected>): TSelected | T;
 
-declare const useRouteIsTransitioning: () => boolean;
+declare const useRouter: () => IRouter;
 
-declare const useTranslationLoaded: () => boolean;
+declare const useRouterI18n: () => IRouterI18N;
+
+declare function useRouterService<T, R = any>(serviceToken: T): R;
 
 declare const useRouterBootstrapped: () => boolean;
+
+declare const useRouterIsTransitioning: () => boolean;
+
+declare const useTranslationLoaded: () => boolean;
 
 declare const createRouterConfig: ({ routeEntry, components, routes, routeContexts, notFoundComponent, errorComponent, }: {
     routeEntry: IRouteEntry;
@@ -397,4 +402,4 @@ declare const toLocale: ({ language, region, }: {
     region: IRouteRegion;
 }) => IRouteLocale;
 
-export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteI18N, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, RouteI18nContext, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, Router, RouterCoreContext, type RouterProps, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterService, useTranslationLoaded };
+export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRouterI18N, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, Router, RouterCoreContext, RouterI18nContext, type RouterProps, type UseRouterServiceProps, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteContext, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterI18n, useRouterIsTransitioning, useRouterService, useTranslationLoaded };

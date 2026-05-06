@@ -2,7 +2,7 @@ import { RouteContextProps } from "@/Types";
 import { useRouteContext as TanstackUseRouteContext } from "@tanstack/react-router";
 import { useMemo } from "react";
 
-export function useRouterService<T, TSelected = T>({
+export function useRouteContext<T, TSelected = T>({
   router,
   route,
   select,

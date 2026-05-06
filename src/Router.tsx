@@ -20,12 +20,13 @@ import { createSafeRouterPath } from "@/Utils/createSafeRouterPath";
 import { createRouterCore } from "@/Utils/createRouterCore";
 import { extractLanguage } from "@/Utils/extractLanguage";
 import { I18n as LinguiI18n } from "@lingui/core";
-import { createRouteI18n } from "@/Utils/createRouteI18n";
+import { createRouterI18n } from "@/Utils/createRouterI18n";
 import { I18nProvider as LinguiI18nProvider } from "@lingui/react";
-import { RouteI18nContext } from "@/RouteI18nContext";
+import { RouterI18nContext } from "@/RouterI18nContext";
 import { RouterOutlet } from "@/RouterOutlet";
 import { extractLocale } from "@/Utils/extractLocale";
 import { toCompiledMessages } from "@/Utils/toCompiledMessages";
+import { ServiceContainer } from "react-service-container";
 
 /**
  * The Router component is the entry point for the localized routing system.
@@ -251,7 +252,7 @@ export const Router = <TServices extends Record<string, unknown>>(
   );
 
   const i18n = useMemo(
-    () => createRouteI18n({ i18n: linguiI18N }),
+    () => createRouterI18n({ i18n: linguiI18N }),
     [linguiI18N],
   );
 
@@ -260,6 +261,13 @@ export const Router = <TServices extends Record<string, unknown>>(
     locale: router.defaultLanguage(),
     messages: {},
   });
+
+  const providers = useMemo(() => {
+    return Object.entries(services).map(([key, value]) => ({
+      provide: key,
+      useValue: value,
+    }));
+  }, [services]);
 
   // Extract locale only on first load or refresh.
   useEffect(() => {
@@ -288,12 +296,14 @@ export const Router = <TServices extends Record<string, unknown>>(
   }, [i18n, translations, router, services]);
 
   return (
-    <RouteI18nContext.Provider value={i18n}>
-      <LinguiI18nProvider i18n={linguiI18N}>
-        <RouterCoreContext.Provider value={router}>
-          <RouterProvider router={tanstackRouter} />
-        </RouterCoreContext.Provider>
-      </LinguiI18nProvider>
-    </RouteI18nContext.Provider>
+    <ServiceContainer providers={providers}>
+      <RouterI18nContext.Provider value={i18n}>
+        <LinguiI18nProvider i18n={linguiI18N}>
+          <RouterCoreContext.Provider value={router}>
+            <RouterProvider router={tanstackRouter} />
+          </RouterCoreContext.Provider>
+        </LinguiI18nProvider>
+      </RouterI18nContext.Provider>
+    </ServiceContainer>
   );
 };

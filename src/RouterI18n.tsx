@@ -1,8 +1,8 @@
-import type { IRouteI18N, IRouteLanguage, ITranslations } from "@/Types";
+import type { IRouterI18N, IRouteLanguage, ITranslations } from "@/Types";
 import { I18n as LinguiI18n, type Locale, type Messages } from "@lingui/core";
 import { Trans } from "@lingui/react";
 
-export class RouteI18n implements IRouteI18N {
+export class RouterI18n implements IRouterI18N {
   private readonly _i18n: LinguiI18n;
   private readonly _loaded: Set<IRouteLanguage> = new Set();
   private readonly _listeners: Set<() => void> = new Set();
@@ -12,7 +12,7 @@ export class RouteI18n implements IRouteI18N {
   }
 
   public static new(i18n: LinguiI18n) {
-    return new RouteI18n(i18n);
+    return new RouterI18n(i18n);
   }
 
   trans(key: string, variables: Record<string, unknown>) {

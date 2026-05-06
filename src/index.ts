@@ -3,23 +3,27 @@ export * from "./Types";
 
 // Contexts
 export { RouterCoreContext } from "./RouterCoreContext";
-export { RouteI18nContext } from "./RouteI18nContext";
+export { RouterI18nContext } from "./RouterI18nContext";
 
 // Hooks
-export { useRouter } from "./Hooks/useRouter";
-export { useRouteI18n } from "./Hooks/useRouteI18n";
-export { useRouteLanguage } from "./Hooks/useRouteLanguage";
-export { useRouteLocale } from "./Hooks/useRouteLocale";
-export { useRouteRegion } from "./Hooks/useRouteRegion";
+// -- Route
+export { useRouteLanguage } from "./Hooks/Route/useRouteLanguage";
+export { useRouteLocale } from "./Hooks/Route/useRouteLocale";
+export { useRouteRegion } from "./Hooks/Route/useRouteRegion";
+export { useRouteParams } from "./Hooks/Route/useRouteParams";
+export { useRouteQuery } from "./Hooks/Route/useRouteQuery";
+export { useRouteLoaderData } from "@/Hooks/Route/useRouteLoaderData";
+export { useRouteContext } from "@/Hooks/Route/useRouteContext";
 
-export { useRouteParams } from "./Hooks/useRouteParams";
-export { useRouteQuery } from "./Hooks/useRouteQuery";
-export { useRouteLoaderData } from "@/Hooks/useRouteLoaderData";
-export { useRouterService } from "@/Hooks/useRouterService";
+// -- Router
+export { useRouter } from "./Hooks/Router/useRouter";
+export { useRouterI18n } from "./Hooks/Router/useRouterI18n";
+export { useRouterService } from "@/Hooks/Router/useRouterService";
+export { useRouterBootstrapped } from "./Hooks/Router/useRouterBootstrapped";
+export { useRouterIsTransitioning } from "./Hooks/Router/useRouterIsTransitioning";
 
-export { useRouteIsTransitioning } from "./Hooks/useRouteIsTransitioning";
+// -- I18N
 export { useTranslationLoaded } from "./Hooks/useTranslationLoaded";
-export { useRouterBootstrapped } from "./Hooks/useRouterBootstrapped";
 
 // Utils
 export { createRouterConfig } from "./Utils/createRouterConfig";

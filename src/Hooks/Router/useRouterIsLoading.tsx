@@ -1,6 +1,6 @@
 import { useRouterState } from "@tanstack/react-router";
 
-export const useRouteIsLoading = (): boolean => {
+export const useRouterIsLoading = (): boolean => {
   const { isLoading } = useRouterState({
     select: (state) => ({
       isLoading: state.isLoading,

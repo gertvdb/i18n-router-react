@@ -317,7 +317,7 @@ export type HrefParams = {
 /**
  * Interface for i18n support within the router.
  */
-export interface IRouteI18N {
+export interface IRouterI18N {
   /**
    * Translates a key to a React element.
    */
@@ -398,4 +398,8 @@ export interface RouteLoaderDataProps<T, TSelected = T> extends RoutePathProps {
 
 export interface IRouteQueryProps<T, TSelected = T> extends RoutePathProps {
   select?: (match: T) => TSelected;
+}
+
+export interface UseRouterServiceProps<T, R = any> {
+  serviceToken: T;
 }

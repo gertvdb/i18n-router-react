@@ -1,8 +1,9 @@
 import { createContext, useContext, useMemo, useEffect, useSyncExternalStore } from 'react';
-import { useRouterState, createRootRouteWithContext, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, useLoaderData, useRouteContext, Outlet } from '@tanstack/react-router';
+import { useRouterState, createRootRouteWithContext, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, useLoaderData, useRouteContext as useRouteContext$1, Outlet } from '@tanstack/react-router';
 import { I18n } from '@lingui/core';
 import { I18nProvider, Trans } from '@lingui/react';
 import { jsx } from 'react/jsx-runtime';
+import { ServiceContainer, useService } from 'react-service-container';
 
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -1148,14 +1149,14 @@ var extractLanguage = /* @__PURE__ */ __name(({
 }) => {
   return new Intl.Locale(locale).language.toLowerCase();
 }, "extractLanguage");
-var _RouteI18n = class _RouteI18n {
+var _RouterI18n = class _RouterI18n {
   constructor(i18n) {
     this._loaded = /* @__PURE__ */ new Set();
     this._listeners = /* @__PURE__ */ new Set();
     this._i18n = i18n;
   }
   static new(i18n) {
-    return new _RouteI18n(i18n);
+    return new _RouterI18n(i18n);
   }
   trans(key, variables) {
     return /* @__PURE__ */ jsx(Trans, { id: key, values: variables });
@@ -1185,14 +1186,16 @@ var _RouteI18n = class _RouteI18n {
     this._notify();
   }
 };
-__name(_RouteI18n, "RouteI18n");
-var RouteI18n = _RouteI18n;
+__name(_RouterI18n, "RouterI18n");
+var RouterI18n = _RouterI18n;
 
-// src/Utils/createRouteI18n.tsx
-var createRouteI18n = /* @__PURE__ */ __name(({ i18n }) => {
-  return RouteI18n.new(i18n);
-}, "createRouteI18n");
-var RouteI18nContext = createContext(
+// src/Utils/createRouterI18n.tsx
+var createRouterI18n = /* @__PURE__ */ __name(({
+  i18n
+}) => {
+  return RouterI18n.new(i18n);
+}, "createRouterI18n");
+var RouterI18nContext = createContext(
   void 0
 );
 var useRouteLanguage = /* @__PURE__ */ __name(() => useRouterState({
@@ -1200,16 +1203,16 @@ var useRouteLanguage = /* @__PURE__ */ __name(() => useRouterState({
     locale: state.location.pathname.split("/")[1]
   }), "select")
 }), "useRouteLanguage");
-var useRouteI18n = /* @__PURE__ */ __name(() => {
-  const context = useContext(RouteI18nContext);
+var useRouterI18n = /* @__PURE__ */ __name(() => {
+  const context = useContext(RouterI18nContext);
   if (!context) {
     throw new Error("useRouteI18n must be used within a <Router> Provider");
   }
   return context;
-}, "useRouteI18n");
+}, "useRouterI18n");
 var RouterOutlet = /* @__PURE__ */ __name(() => {
   const language = useRouteLanguage();
-  const i18n = useRouteI18n();
+  const i18n = useRouterI18n();
   useEffect(() => {
     if (i18n.current() !== language) {
       i18n.activate(language);
@@ -1751,13 +1754,19 @@ var Router = /* @__PURE__ */ __name((props) => {
     []
   );
   const i18n = useMemo(
-    () => createRouteI18n({ i18n: linguiI18N }),
+    () => createRouterI18n({ i18n: linguiI18N }),
     [linguiI18N]
   );
   linguiI18N.loadAndActivate({
     locale: router.defaultLanguage(),
     messages: {}
   });
+  const providers = useMemo(() => {
+    return Object.entries(services).map(([key, value]) => ({
+      provide: key,
+      useValue: value
+    }));
+  }, [services]);
   useEffect(() => {
     (async () => {
       const extractedLocale = extractLocale({
@@ -1778,15 +1787,8 @@ var Router = /* @__PURE__ */ __name((props) => {
       i18n.load(lang, compiledMessages);
     });
   }, [i18n, translations, router, services]);
-  return /* @__PURE__ */ jsx(RouteI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsx(I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsx(RouterCoreContext.Provider, { value: router, children: /* @__PURE__ */ jsx(RouterProvider, { router: tanstackRouter }) }) }) });
+  return /* @__PURE__ */ jsx(ServiceContainer, { providers, children: /* @__PURE__ */ jsx(RouterI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsx(I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsx(RouterCoreContext.Provider, { value: router, children: /* @__PURE__ */ jsx(RouterProvider, { router: tanstackRouter }) }) }) }) });
 }, "Router");
-var useRouter = /* @__PURE__ */ __name(() => {
-  const context = useContext(RouterCoreContext);
-  if (!context) {
-    throw new Error("useRouter must be used within a <Router> Provider");
-  }
-  return context;
-}, "useRouter");
 var useRouteLocale = /* @__PURE__ */ __name(() => useRouterState({
   select: /* @__PURE__ */ __name((state) => extractLocale({ pathname: state.location.pathname }), "select")
 }), "useRouteLocale");
@@ -1802,7 +1804,7 @@ var extractRegion = /* @__PURE__ */ __name(({
   return region.toLowerCase();
 }, "extractRegion");
 
-// src/Hooks/useRouteRegion.tsx
+// src/Hooks/Route/useRouteRegion.tsx
 var useRouteRegion = /* @__PURE__ */ __name(() => {
   const locale = useRouteLocale();
   if (!locale) {
@@ -1859,7 +1861,7 @@ function useRouteLoaderData({
   return useLoaderData({ from: id });
 }
 __name(useRouteLoaderData, "useRouteLoaderData");
-function useRouterService({
+function useRouteContext({
   router,
   route,
   select
@@ -1871,24 +1873,41 @@ function useRouterService({
     return route.id;
   }, [route.id, route.locale, router]);
   if (select) {
-    return useRouteContext({
+    return useRouteContext$1({
       from: id,
       select
     });
   }
-  return useRouteContext({ from: id });
+  return useRouteContext$1({ from: id });
+}
+__name(useRouteContext, "useRouteContext");
+var useRouter = /* @__PURE__ */ __name(() => {
+  const context = useContext(RouterCoreContext);
+  if (!context) {
+    throw new Error("useRouter must be used within a <Router> Provider");
+  }
+  return context;
+}, "useRouter");
+function useRouterService(serviceToken) {
+  return useService(serviceToken);
 }
 __name(useRouterService, "useRouterService");
-var useRouteIsTransitioning = /* @__PURE__ */ __name(() => {
+var useRouterBootstrapped = /* @__PURE__ */ __name(() => {
+  const router = useRouter();
+  return useRouterState({
+    select: /* @__PURE__ */ __name(() => router.isBootstrapped(), "select")
+  });
+}, "useRouterBootstrapped");
+var useRouterIsTransitioning = /* @__PURE__ */ __name(() => {
   const { isTransitioning } = useRouterState({
     select: /* @__PURE__ */ __name((state) => ({
       isTransitioning: state.isTransitioning
     }), "select")
   });
   return isTransitioning;
-}, "useRouteIsTransitioning");
+}, "useRouterIsTransitioning");
 var useTranslationLoaded = /* @__PURE__ */ __name(() => {
-  const i18n = useRouteI18n();
+  const i18n = useRouterI18n();
   const language = useRouteLanguage();
   return useSyncExternalStore(
     (callback) => i18n.subscribe(callback),
@@ -1896,12 +1915,6 @@ var useTranslationLoaded = /* @__PURE__ */ __name(() => {
     () => false
   );
 }, "useTranslationLoaded");
-var useRouterBootstrapped = /* @__PURE__ */ __name(() => {
-  const router = useRouter();
-  return useRouterState({
-    select: /* @__PURE__ */ __name(() => router.isBootstrapped(), "select")
-  });
-}, "useRouterBootstrapped");
 
 // src/Utils/createRouterConfig.tsx
 var createRouterConfig = /* @__PURE__ */ __name(({
@@ -1922,6 +1935,6 @@ var createRouterConfig = /* @__PURE__ */ __name(({
   };
 }, "createRouterConfig");
 
-export { RouteI18nContext, Router, RouterCoreContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteI18n, useRouteIsTransitioning, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterService, useTranslationLoaded };
+export { Router, RouterCoreContext, RouterI18nContext, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteContext, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterI18n, useRouterIsTransitioning, useRouterService, useTranslationLoaded };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

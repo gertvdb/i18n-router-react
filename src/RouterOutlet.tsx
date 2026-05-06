@@ -1,11 +1,11 @@
 import { type FC, useEffect } from "react";
-import { useRouteLanguage } from "@/Hooks/useRouteLanguage";
+import { useRouteLanguage } from "@/Hooks/Route/useRouteLanguage";
 import { Outlet as TanstackOutlet } from "@tanstack/react-router";
-import { useRouteI18n } from "@/Hooks/useRouteI18n";
+import { useRouterI18n } from "@/Hooks/Router/useRouterI18n";
 
 export const RouterOutlet: FC = () => {
   const language = useRouteLanguage();
-  const i18n = useRouteI18n();
+  const i18n = useRouterI18n();
 
   useEffect(() => {
     if (i18n.current() !== language) {

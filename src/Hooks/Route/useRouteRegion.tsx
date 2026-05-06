@@ -1,6 +1,6 @@
 import type { IRouteRegion } from "@/Types";
 import { extractRegion } from "@/Utils/extractRegion";
-import { useRouteLocale } from "@/Hooks/useRouteLocale";
+import { useRouteLocale } from "@/Hooks/Route/useRouteLocale";
 
 // Redirect url's are created for every language to the first region of that language
 // Due to this, extractRegion could throw an error during the redirect (/nl => /nl-be)
