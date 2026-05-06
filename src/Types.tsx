@@ -380,6 +380,7 @@ export interface RouterProps<TContext = Record<string, unknown>> {
    */
   translations(
     language: IRouteLanguage,
+    context: TContext,
   ): ITranslations | Promise<ITranslations>;
 }
 

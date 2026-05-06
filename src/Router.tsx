@@ -270,21 +270,21 @@ export const Router = <TContext extends Record<string, unknown>>(
         ? extractLanguage({ locale: extractedLocale })
         : router.defaultLanguage();
 
-      const messages = await translations(lang);
+      const messages = await translations(lang, context);
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages as ITranslations);
       linguiI18N.activate(lang);
       i18n.load(lang, compiledMessages as ITranslations);
     })();
-  }, [i18n, linguiI18N, translations, router]);
+  }, [i18n, linguiI18N, translations, router, context]);
 
   useEffect(() => {
     router.languages().forEach(async (lang) => {
-      const messages = await translations(lang);
+      const messages = await translations(lang, context);
       const compiledMessages = toCompiledMessages(messages);
       i18n.load(lang, compiledMessages as ITranslations);
     });
-  }, [i18n, translations, router]);
+  }, [i18n, translations, router, context]);
 
   return (
     <RouteI18nContext.Provider value={i18n}>

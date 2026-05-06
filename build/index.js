@@ -1763,20 +1763,20 @@ var Router = /* @__PURE__ */ __name((props) => {
         pathname: window.location.pathname
       });
       const lang = extractedLocale ? extractLanguage({ locale: extractedLocale }) : router.defaultLanguage();
-      const messages = await translations(lang);
+      const messages = await translations(lang, context);
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages);
       linguiI18N.activate(lang);
       i18n.load(lang, compiledMessages);
     })();
-  }, [i18n, linguiI18N, translations, router]);
+  }, [i18n, linguiI18N, translations, router, context]);
   useEffect(() => {
     router.languages().forEach(async (lang) => {
-      const messages = await translations(lang);
+      const messages = await translations(lang, context);
       const compiledMessages = toCompiledMessages(messages);
       i18n.load(lang, compiledMessages);
     });
-  }, [i18n, translations, router]);
+  }, [i18n, translations, router, context]);
   return /* @__PURE__ */ jsx(RouteI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsx(I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsx(RouterCoreContext.Provider, { value: router, children: /* @__PURE__ */ jsx(RouterProvider, { router: tanstackRouter }) }) }) });
 }, "Router");
 var useRouter = /* @__PURE__ */ __name(() => {

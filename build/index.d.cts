@@ -328,7 +328,7 @@ interface RouterProps<TContext = Record<string, unknown>> {
     /**
      * Function to load translations for a given language.
      */
-    translations(language: IRouteLanguage): ITranslations | Promise<ITranslations>;
+    translations(language: IRouteLanguage, context: TContext): ITranslations | Promise<ITranslations>;
 }
 interface RoutePathProps {
     router: IRouter;
