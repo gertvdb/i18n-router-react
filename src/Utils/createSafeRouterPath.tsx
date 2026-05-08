@@ -1,12 +1,17 @@
-import type { IRouteLanguage, IRouteLocale } from "@/Types.tsx";
+import { ILocale } from "@gertvdb/locale";
 
 export const createSafeRouterPath = ({
-  localeOrLanguage,
+  locale,
   path,
 }: {
-  localeOrLanguage: IRouteLocale | IRouteLanguage;
+  locale: ILocale;
   path: string;
 }): string => {
   const safePath = path === "/" ? "" : path;
-  return "/" + localeOrLanguage.toLowerCase() + safePath.toLowerCase();
+  return (
+    "/" +
+    locale.language +
+    (locale.region ? "-" + locale.region : "") +
+    safePath.toLowerCase()
+  );
 };

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import React__default from 'react';
 import { NotFoundRouteProps, ErrorComponentProps } from '@tanstack/react-router';
+import { ILocale, ILanguageString, IRegionString, ILocaleString } from '@gertvdb/locale';
 import * as react_jsx_runtime from 'react/jsx-runtime';
 
 /**
@@ -11,18 +12,6 @@ type IRouteContextId = string;
  * ID of a route.
  */
 type IRouteId = string;
-/**
- * Locale string in the format "language-region" (e.g., "nl-be").
- */
-type IRouteLocale = string;
-/**
- * Region identifier (e.g., "be", "fr").
- */
-type IRouteRegion = string;
-/**
- * Language identifier (e.g., "nl", "fr").
- */
-type IRouteLanguage = string;
 /**
  * Path string for a route.
  */
@@ -44,7 +33,7 @@ interface IRouteComponent<TLoaderData = any, TServices = any> {
      */
     loader?: (params: any, opts: {
         services: TServices;
-    }, language: IRouteLanguage, region: IRouteRegion) => Promise<TLoaderData> | TLoaderData;
+    }, locale: ILocale) => Promise<TLoaderData> | TLoaderData;
 }
 /**
  * A record of route components indexed by their route ID.
@@ -55,7 +44,7 @@ type IRouteComponents<TContext = any> = Record<IRouteId, IRouteComponent<any, TC
  */
 interface ILocaleRoute {
     id: IRouteId;
-    locale: IRouteLocale;
+    locale: ILocale;
 }
 /**
  * Definition of a route including its path and supported languages/regions.
@@ -68,11 +57,11 @@ interface IRoute {
     /**
      * Language of this route definition.
      */
-    language: IRouteLanguage;
+    language: ILanguageString;
     /**
      * List of regions supported by this route definition.
      */
-    regions: IRouteRegion[];
+    regions: IRegionString[];
     /**
      * The URL path for this route.
      */
@@ -112,12 +101,12 @@ type IRouteRedirects = IRouteRedirect[];
  */
 interface IRouteEntry {
     id: IRouteId;
-    language: IRouteLanguage;
-    region: IRouteRegion;
+    language: ILanguageString;
+    region: IRegionString;
 }
 interface IRouteTo {
     id: IRouteId;
-    localeOrLanguage: IRouteLanguage | IRouteLocale;
+    locale: ILocale;
 }
 /**
  * Main configuration object for the Router.
@@ -187,29 +176,27 @@ interface IRouter {
     /**
      * Gets the path for a route ID and locale or language/region.
      */
-    path(id: IRouteId, locale: IRouteLocale): string;
-    path(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
+    path(id: IRouteId, locale: ILocale): string;
     /**
      * Gets the internal TanStack route ID.
      */
-    id(id: IRouteId, locale: IRouteLocale): string;
-    id(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
+    id(id: IRouteId, locale: ILocale): string;
     /**
      * Checks if a route exists for the given ID and locale.
      */
-    hasRoute(id: IRouteId, locale: IRouteLocale): boolean;
+    hasRoute(id: IRouteId, locale: ILocale): boolean;
     /**
      * Gets the default application language.
      */
-    defaultLanguage(): IRouteLanguage;
+    defaultLanguage(): ILanguageString;
     /**
      * Gets all supported languages.
      */
-    languages(): IRouteLanguage[];
+    languages(): ILanguageString[];
     /**
      * Gets a mapping of languages to their supported regions.
      */
-    regionsByLanguage(): Record<IRouteLanguage, IRouteRegion[]>;
+    regionsByLanguage(): Partial<Record<ILanguageString, IRegionString[]>>;
     /**
      * Checks if the router has finished bootstrapping.
      */
@@ -262,7 +249,7 @@ type AbsoluteHrefParams = {
  */
 type HrefParams = {
     id: IRouteId;
-    locale: IRouteLocale;
+    locale: ILocale;
     query?: Record<string, unknown>;
     params?: Record<string, unknown>;
     hash?: string;
@@ -282,11 +269,11 @@ interface IRouterI18N {
     /**
      * Activates a specific language.
      */
-    activate(language: IRouteLanguage): void;
+    activate(language: ILanguageString): void;
     /**
      * Gets the current language.
      */
-    current(): IRouteLanguage;
+    current(): ILanguageString;
     /**
      * Subscribes to language changes.
      */
@@ -294,11 +281,11 @@ interface IRouterI18N {
     /**
      * Checks if a language's translations are loaded.
      */
-    isLoaded(language: IRouteLanguage): boolean;
+    isLoaded(language: ILanguageString): boolean;
     /**
      * Loads translations for a language.
      */
-    load(language: IRouteLanguage, messages: ITranslations): void;
+    load(language: ILanguageString, messages: ITranslations): void;
 }
 /**
  * Record of translation keys and their values.
@@ -319,7 +306,7 @@ interface Router18nProviderProps<TServices = Record<string, unknown>> {
     /**
      * Function to load translations for a given language.
      */
-    translations(language: IRouteLanguage, services: TServices): ITranslations | Promise<ITranslations>;
+    translations(language: ILanguageString, services: TServices): ITranslations | Promise<ITranslations>;
 }
 interface RoutePathProps {
     router: IRouter;
@@ -354,11 +341,11 @@ declare const RouterContext: React.Context<IRouter | undefined>;
 
 declare const RouterI18nContext: React.Context<IRouterI18N | undefined>;
 
-declare const useRouteLanguage: () => IRouteLanguage;
-
-declare const useRouteLocale: () => IRouteLocale;
-
-declare const useRouteRegion: () => IRouteRegion | null;
+declare const useRouteLocale: () => {
+    locale: ILocale;
+    language: ILocaleString;
+    region: IRegionString | undefined;
+};
 
 declare function useRouteParams<T, TSelected = T>({ router, route, select, }: RouteParamsProps<T, TSelected>): TSelected | T;
 
@@ -390,4 +377,4 @@ declare const createRouterConfig: ({ routeEntry, components, routes, routeContex
     errorComponent: (props: ErrorComponentProps) => React__default.ReactNode;
 }) => IRouterConfig;
 
-export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRouterI18N, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, type Router18nProviderProps, RouterContext, RouterI18nContext, RouterI18nProvider, type UseRouterServiceProps, createRouterConfig, useRouteContext, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterIsTransitioning, useRouterService, useTranslationLoaded };
+export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteId, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteTo, type IRouter, type IRouterConfig, type IRouterI18N, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, type Router18nProviderProps, RouterContext, RouterI18nContext, RouterI18nProvider, type UseRouterServiceProps, createRouterConfig, useRouteContext, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouter, useRouterBootstrapped, useRouterIsTransitioning, useRouterService, useTranslationLoaded };

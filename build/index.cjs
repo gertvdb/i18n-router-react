@@ -2,6 +2,7 @@
 
 var react = require('react');
 var reactRouter = require('@tanstack/react-router');
+var locale = require('@gertvdb/locale');
 var core = require('@lingui/core');
 var react$1 = require('@lingui/react');
 var jsxRuntime = require('react/jsx-runtime');
@@ -886,24 +887,14 @@ var require_parser = __commonJS({
 });
 var RouterContext = react.createContext(void 0);
 
-// src/Utils/toLocale.tsx
-var toLocale = /* @__PURE__ */ __name(({
-  language,
-  region
-}) => {
-  return language.toLowerCase() + "-" + region.toLowerCase();
-}, "toLocale");
-
 // src/Utils/createSafeRouterPath.tsx
 var createSafeRouterPath = /* @__PURE__ */ __name(({
-  localeOrLanguage,
+  locale,
   path
 }) => {
   const safePath = path === "/" ? "" : path;
-  return "/" + localeOrLanguage.toLowerCase() + safePath.toLowerCase();
+  return "/" + locale.language + (locale.region ? "-" + locale.region : "") + safePath.toLowerCase();
 }, "createSafeRouterPath");
-
-// src/Domain/Router.tsx
 var _Router = class _Router {
   constructor(config, router, routes) {
     this._isBootstrapped = false;
@@ -933,18 +924,18 @@ var _Router = class _Router {
     state,
     target = "_self"
   }) {
-    const toRoute = this._route(to.id, to.localeOrLanguage);
+    const toRoute = this._route(to.id, to.locale);
     if (!toRoute) {
       return Promise.reject(
         new Error(
-          `Route (to) for id "${to.id}" and locale "${to.localeOrLanguage}" not found.`
+          `Route (to) for id "${to.id}" and locale "${to.locale.locale}" not found.`
         )
       );
     }
     if (target === "_blank") {
       const href = this.href({
         id: to.id,
-        locale: to.localeOrLanguage,
+        locale: to.locale,
         query,
         params,
         hash
@@ -966,16 +957,7 @@ var _Router = class _Router {
       await this._router.navigate(options);
     }
   }
-  path(id, localeOrLanguage, region) {
-    let locale;
-    if (region !== void 0) {
-      locale = toLocale({
-        language: localeOrLanguage,
-        region
-      });
-    } else {
-      locale = localeOrLanguage;
-    }
+  path(id, locale) {
     const toRoute = this._route(id, locale);
     if (!toRoute) {
       console.warn(
@@ -986,14 +968,8 @@ var _Router = class _Router {
     this._router.buildLocation({ to: toRoute.fullPath });
     return toRoute.fullPath;
   }
-  id(id, localeOrLanguage, region) {
-    let path;
-    if (region !== void 0) {
-      path = this.path(id, localeOrLanguage, region);
-    } else {
-      path = this.path(id, localeOrLanguage);
-    }
-    return this._routeIds[path];
+  id(id, locale) {
+    return this._routeIds[this.path(id, locale)];
   }
   href({ id, locale, query, params, hash }) {
     const toRoute = this._route(id, locale);
@@ -1073,11 +1049,13 @@ var _Router = class _Router {
     const result = {};
     this._config.routes.forEach((route) => {
       const language = route.language;
-      const regions2 = route.regions;
+      const routeRegions = route.regions;
       if (!result[language]) {
         result[language] = /* @__PURE__ */ new Set();
       }
-      regions2.forEach((region) => result[language].add(region));
+      routeRegions.forEach((region) => {
+        result[language].add(region);
+      });
     });
     const regions = {};
     for (const language in result) {
@@ -1094,27 +1072,31 @@ var _Router = class _Router {
     }
     return this._isBootstrapped;
   }
-  _route(id, localeOrLanguage) {
+  _route(id, locale$1) {
     const { components, routes } = this._config;
     const routeConfig = components[id] ?? null;
     if (!routeConfig) {
       return null;
     }
     let route = routes.find(
-      (route2) => route2.regions.some(
-        (region) => route2.id === id && toLocale({ language: route2.language, region }) === localeOrLanguage
-      )
+      (route2) => route2.regions.some((region) => {
+        const compareLocale = locale.createLocale({
+          languageOrLocale: route2.language,
+          region
+        });
+        return route2.id === id && compareLocale.locale === locale$1.locale;
+      })
     );
     if (!route) {
       route = routes.find(
-        (route2) => route2.id === id && route2.language === localeOrLanguage
+        (route2) => route2.id === id && route2.language === locale$1.language
       );
     }
     if (!route) {
       return null;
     }
     const path = createSafeRouterPath({
-      localeOrLanguage,
+      locale: locale$1,
       path: route.path
     });
     const routesByPath = this._router.routesByPath;
@@ -1144,13 +1126,6 @@ var createRouterCore = /* @__PURE__ */ __name(({
 }) => {
   return Router.new(config, router, routes);
 }, "createRouterCore");
-
-// src/Utils/Route/extractRouteLanguage.tsx
-var extractRouteLanguage = /* @__PURE__ */ __name(({
-  locale
-}) => {
-  return new Intl.Locale(locale).language.toLowerCase();
-}, "extractRouteLanguage");
 var _RouterI18n = class _RouterI18n {
   constructor(i18n) {
     this._loaded = /* @__PURE__ */ new Set();
@@ -1200,11 +1175,6 @@ var createRouterI18n = /* @__PURE__ */ __name(({
 var RouterI18nContext = react.createContext(
   void 0
 );
-var useRouteLanguage = /* @__PURE__ */ __name(() => reactRouter.useRouterState({
-  select: /* @__PURE__ */ __name((state) => extractRouteLanguage({
-    locale: state.location.pathname.split("/")[1]
-  }), "select")
-}), "useRouteLanguage");
 var useRouter = /* @__PURE__ */ __name(() => {
   const routerContext = react.useContext(RouterContext);
   if (!routerContext) {
@@ -1216,8 +1186,29 @@ var useRouter = /* @__PURE__ */ __name(() => {
   }
   return { router: routerContext, i18n: i18nContext };
 }, "useRouter");
+
+// src/Utils/Route/extractRouteLocale.tsx
+var extractRouteLocale = /* @__PURE__ */ __name(({
+  pathname
+}) => {
+  return pathname.split("/")[1];
+}, "extractRouteLocale");
+var useRouteLocale = /* @__PURE__ */ __name(() => {
+  const locale$1 = reactRouter.useRouterState({
+    select: /* @__PURE__ */ __name((state) => locale.createLocale({
+      languageOrLocale: extractRouteLocale({
+        pathname: state.location.pathname
+      })
+    }), "select")
+  });
+  return {
+    locale: locale$1,
+    language: locale$1.language,
+    region: locale$1.region
+  };
+}, "useRouteLocale");
 var RouterOutlet = /* @__PURE__ */ __name(() => {
-  const language = useRouteLanguage();
+  const { language } = useRouteLocale();
   const { i18n } = useRouter();
   react.useEffect(() => {
     if (i18n.current() !== language) {
@@ -1226,13 +1217,6 @@ var RouterOutlet = /* @__PURE__ */ __name(() => {
   }, [i18n, language]);
   return /* @__PURE__ */ jsxRuntime.jsx(reactRouter.Outlet, {});
 }, "RouterOutlet");
-
-// src/Utils/Route/extractRouteLocale.tsx
-var extractRouteLocale = /* @__PURE__ */ __name(({
-  pathname
-}) => {
-  return pathname.split("/")[1].toLowerCase();
-}, "extractRouteLocale");
 
 // node_modules/@lingui/message-utils/dist/compileMessage.mjs
 var import_parser = __toESM(require_parser());
@@ -1645,10 +1629,13 @@ var RouterI18nProvider = /* @__PURE__ */ __name((props) => {
       );
     }
     regions.forEach((region) => {
-      const locale = toLocale({ language: route.language, region });
+      const locale$1 = locale.createLocale({
+        languageOrLocale: route.language,
+        region
+      });
       const isFirstRegion = languageFirstRegion[route.language] === region;
       const path = createSafeRouterPath({
-        localeOrLanguage: locale,
+        locale: locale$1,
         path: route.path
       });
       routes[path] = reactRouter.createRoute({
@@ -1667,19 +1654,18 @@ var RouterI18nProvider = /* @__PURE__ */ __name((props) => {
             return currentRouteConfig.loader(
               params,
               { services: context },
-              route.language,
-              region
+              locale$1
             );
           }
         }, "loader")
       });
       if (isFirstRegion) {
         const redirectPath = createSafeRouterPath({
-          localeOrLanguage: route.language,
+          locale: locale.createLocale({ languageOrLocale: route.language }),
           path: route.path
         });
         const targetPath = createSafeRouterPath({
-          localeOrLanguage: locale,
+          locale: locale$1,
           path: route.path
         });
         routeRedirects[redirectPath] = reactRouter.createRoute({
@@ -1695,7 +1681,10 @@ var RouterI18nProvider = /* @__PURE__ */ __name((props) => {
       if (routeEntry.id === route.id && routeEntry.language === route.language && routeEntry.region === region) {
         const entryPath = "/";
         const redirectToEntry = createSafeRouterPath({
-          localeOrLanguage: route.language,
+          locale: locale.createLocale({
+            languageOrLocale: route.language,
+            region
+          }),
           path: route.path
         });
         routeRedirects[entryPath] = reactRouter.createRoute({
@@ -1764,10 +1753,11 @@ var RouterI18nProvider = /* @__PURE__ */ __name((props) => {
   }, [services]);
   react.useEffect(() => {
     (async () => {
-      const extractedLocale = extractRouteLocale({
+      const loc = extractRouteLocale({
         pathname: window.location.pathname
       });
-      const lang = extractedLocale ? extractRouteLanguage({ locale: extractedLocale }) : router.defaultLanguage();
+      const extractedLocale = loc !== "" ? locale.createLocale({ languageOrLocale: loc }) : locale.createLocale({ languageOrLocale: router.defaultLanguage() });
+      const lang = extractedLocale.language;
       const messages = await translations(lang, services);
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages);
@@ -1793,33 +1783,6 @@ function toCompiledMessages(rawMessages) {
   return compiledMessages;
 }
 __name(toCompiledMessages, "toCompiledMessages");
-var useRouteLocale = /* @__PURE__ */ __name(() => reactRouter.useRouterState({
-  select: /* @__PURE__ */ __name((state) => extractRouteLocale({ pathname: state.location.pathname }), "select")
-}), "useRouteLocale");
-
-// src/Utils/Route/extractRouteRegion.tsx
-var extractRouteRegion = /* @__PURE__ */ __name(({
-  locale
-}) => {
-  const region = new Intl.Locale(locale).region;
-  if (!region) {
-    throw new Error("a locale must contain a region");
-  }
-  return region.toLowerCase();
-}, "extractRouteRegion");
-
-// src/Hooks/Route/useRouteRegion.tsx
-var useRouteRegion = /* @__PURE__ */ __name(() => {
-  const locale = useRouteLocale();
-  if (!locale) {
-    return null;
-  }
-  try {
-    return extractRouteRegion({ locale });
-  } catch (e) {
-    return null;
-  }
-}, "useRouteRegion");
 function useRouteParams({
   router,
   route,
@@ -1905,7 +1868,7 @@ var useRouterIsTransitioning = /* @__PURE__ */ __name(() => {
 }, "useRouterIsTransitioning");
 var useTranslationLoaded = /* @__PURE__ */ __name(() => {
   const { i18n } = useRouter();
-  const language = useRouteLanguage();
+  const { language } = useRouteLocale();
   return react.useSyncExternalStore(
     (callback) => i18n.subscribe(callback),
     () => i18n.isLoaded(language),
@@ -1937,12 +1900,10 @@ exports.RouterI18nContext = RouterI18nContext;
 exports.RouterI18nProvider = RouterI18nProvider;
 exports.createRouterConfig = createRouterConfig;
 exports.useRouteContext = useRouteContext;
-exports.useRouteLanguage = useRouteLanguage;
 exports.useRouteLoaderData = useRouteLoaderData;
 exports.useRouteLocale = useRouteLocale;
 exports.useRouteParams = useRouteParams;
 exports.useRouteQuery = useRouteQuery;
-exports.useRouteRegion = useRouteRegion;
 exports.useRouter = useRouter;
 exports.useRouterBootstrapped = useRouterBootstrapped;
 exports.useRouterIsTransitioning = useRouterIsTransitioning;

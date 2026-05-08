@@ -3,6 +3,7 @@ import type {
   ErrorComponentProps,
   NotFoundRouteProps,
 } from "@tanstack/react-router";
+import { ILanguageString, ILocale, IRegionString } from "@gertvdb/locale";
 
 /**
  * ID of a route context.
@@ -13,97 +14,6 @@ export type IRouteContextId = string;
  * ID of a route.
  */
 export type IRouteId = string;
-
-/**
- * Locale string in the format "language-region" (e.g., "nl-be").
- */
-export type IRouteLocale =
-    | `${IRouteLanguage}-${IRouteRegion}`
-    | (string & {});
-
-/**
- * Region identifier (e.g., "be", "fr").
- */
-export type IRouteRegion =
-    | (string & {})
-    | "BE" // Belgium
-    | "NL" // Netherlands
-    | "FR" // France
-    | "DE" // Germany
-    | "IT" // Italy
-    | "ES" // Spain
-    | "PT" // Portugal
-    | "PL" // Poland
-    | "CZ" // Czech Republic
-    | "SK" // Slovakia
-    | "AT" // Austria
-    | "CH" // Switzerland
-    | "LU" // Luxembourg
-    | "LI" // Liechtenstein
-    | "DK" // Denmark
-    | "SE" // Sweden
-    | "NO" // Norway
-    | "FI" // Finland
-    | "IS" // Iceland
-    | "IE" // Ireland
-    | "GB" // United Kingdom
-    | "EE" // Estonia
-    | "LV" // Latvia
-    | "LT" // Lithuania
-    | "HU" // Hungary
-    | "RO" // Romania
-    | "BG" // Bulgaria
-    | "GR" // Greece
-    | "HR" // Croatia
-    | "SI" // Slovenia
-    | "RS" // Serbia
-    | "BA" // Bosnia and Herzegovina
-    | "ME" // Montenegro
-    | "MK" // North Macedonia
-    | "AL" // Albania
-    | "UA" // Ukraine
-    | "MD" // Moldova
-    | "TR"; // Turkey
-
-/**
- * Language identifier (e.g., "nl", "fr").
- */
-export type IRouteLanguage =
-    | (string & {})
-    | "sq" // Albanian
-    | "de" // German
-    | "en" // English
-    | "fr" // French
-    | "nl" // Dutch
-    | "it" // Italian
-    | "es" // Spanish
-    | "pt" // Portuguese
-    | "pl" // Polish
-    | "cs" // Czech
-    | "sk" // Slovak
-    | "sl" // Slovenian
-    | "hr" // Croatian
-    | "sr" // Serbian
-    | "bs" // Bosnian
-    | "mk" // Macedonian
-    | "bg" // Bulgarian
-    | "ro" // Romanian
-    | "hu" // Hungarian
-    | "el" // Greek
-    | "sv" // Swedish
-    | "da" // Danish
-    | "no" // Norwegian
-    | "fi" // Finnish
-    | "is" // Icelandic
-    | "et" // Estonian
-    | "lv" // Latvian
-    | "lt" // Lithuanian
-    | "ga" // Irish
-    | "mt" // Maltese
-    | "cy" // Welsh
-    | "eu" // Basque
-    | "ca" // Catalan
-    | "gl"; // Galician
 
 /**
  * Path string for a route.
@@ -129,8 +39,7 @@ export interface IRouteComponent<TLoaderData = any, TServices = any> {
   loader?: (
     params: any,
     opts: { services: TServices },
-    language: IRouteLanguage,
-    region: IRouteRegion,
+    locale: ILocale,
   ) => Promise<TLoaderData> | TLoaderData;
 }
 
@@ -147,7 +56,7 @@ export type IRouteComponents<TContext = any> = Record<
  */
 export interface ILocaleRoute {
   id: IRouteId;
-  locale: IRouteLocale;
+  locale: ILocale;
 }
 
 /**
@@ -161,11 +70,11 @@ export interface IRoute {
   /**
    * Language of this route definition.
    */
-  language: IRouteLanguage;
+  language: ILanguageString;
   /**
    * List of regions supported by this route definition.
    */
-  regions: IRouteRegion[];
+  regions: IRegionString[];
   /**
    * The URL path for this route.
    */
@@ -211,13 +120,13 @@ export type IRouteRedirects = IRouteRedirect[];
  */
 export interface IRouteEntry {
   id: IRouteId;
-  language: IRouteLanguage;
-  region: IRouteRegion;
+  language: ILanguageString;
+  region: IRegionString;
 }
 
 export interface IRouteTo {
   id: IRouteId;
-  localeOrLanguage: IRouteLanguage | IRouteLocale;
+  locale: ILocale;
 }
 
 /**
@@ -305,29 +214,28 @@ export interface IRouter {
   /**
    * Gets the path for a route ID and locale or language/region.
    */
-  path(id: IRouteId, locale: IRouteLocale): string;
-  path(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
+  path(id: IRouteId, locale: ILocale): string;
   /**
    * Gets the internal TanStack route ID.
    */
-  id(id: IRouteId, locale: IRouteLocale): string;
-  id(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
+  id(id: IRouteId, locale: ILocale): string;
+
   /**
    * Checks if a route exists for the given ID and locale.
    */
-  hasRoute(id: IRouteId, locale: IRouteLocale): boolean;
+  hasRoute(id: IRouteId, locale: ILocale): boolean;
   /**
    * Gets the default application language.
    */
-  defaultLanguage(): IRouteLanguage;
+  defaultLanguage(): ILanguageString;
   /**
    * Gets all supported languages.
    */
-  languages(): IRouteLanguage[];
+  languages(): ILanguageString[];
   /**
    * Gets a mapping of languages to their supported regions.
    */
-  regionsByLanguage(): Record<IRouteLanguage, IRouteRegion[]>;
+  regionsByLanguage(): Partial<Record<ILanguageString, IRegionString[]>>;
   /**
    * Checks if the router has finished bootstrapping.
    */
@@ -384,7 +292,7 @@ export type AbsoluteHrefParams = {
  */
 export type HrefParams = {
   id: IRouteId;
-  locale: IRouteLocale;
+  locale: ILocale;
   query?: Record<string, unknown>;
   params?: Record<string, unknown>;
   hash?: string;
@@ -408,11 +316,11 @@ export interface IRouterI18N {
   /**
    * Activates a specific language.
    */
-  activate(language: IRouteLanguage): void;
+  activate(language: ILanguageString): void;
   /**
    * Gets the current language.
    */
-  current(): IRouteLanguage;
+  current(): ILanguageString;
   /**
    * Subscribes to language changes.
    */
@@ -420,11 +328,11 @@ export interface IRouterI18N {
   /**
    * Checks if a language's translations are loaded.
    */
-  isLoaded(language: IRouteLanguage): boolean;
+  isLoaded(language: ILanguageString): boolean;
   /**
    * Loads translations for a language.
    */
-  load(language: IRouteLanguage, messages: ITranslations): void;
+  load(language: ILanguageString, messages: ITranslations): void;
 }
 
 /**
@@ -450,7 +358,7 @@ export interface Router18nProviderProps<TServices = Record<string, unknown>> {
    * Function to load translations for a given language.
    */
   translations(
-    language: IRouteLanguage,
+    language: ILanguageString,
     services: TServices,
   ): ITranslations | Promise<ITranslations>;
 }

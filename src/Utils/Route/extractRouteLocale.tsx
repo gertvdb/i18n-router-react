@@ -1,9 +1,9 @@
-import type { IRouteLocale } from "@/Types.tsx";
+import { ILocaleString } from "@gertvdb/locale";
 
 export const extractRouteLocale = ({
   pathname,
 }: {
   pathname: string;
-}): IRouteLocale => {
-  return pathname.split("/")[1].toLowerCase() as IRouteLocale;
+}): ILocaleString => {
+  return pathname.split("/")[1] as ILocaleString;
 };

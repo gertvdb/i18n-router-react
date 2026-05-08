@@ -1,9 +1,4 @@
-import {
-  IRouter,
-  IRouteRegion,
-  ITranslations,
-  Router18nProviderProps,
-} from "@/Types";
+import { IRouter, ITranslations, Router18nProviderProps } from "@/Types";
 import { useEffect, useMemo } from "react";
 import {
   type AnyRoute,
@@ -14,10 +9,8 @@ import {
   RouterProvider as TanstackRouterProvider,
 } from "@tanstack/react-router";
 import { RouterContext } from "@/Context/RouterContext";
-import { toLocale } from "@/Utils/toLocale";
 import { createSafeRouterPath } from "@/Utils/createSafeRouterPath";
 import { createRouterCore } from "@/Utils//Router/createRouterCore";
-import { extractRouteLanguage } from "@/Utils/Route/extractRouteLanguage";
 import { I18n as LinguiI18n, type Messages } from "@lingui/core";
 import { createRouterI18n } from "@/Utils/Router/createRouterI18n";
 import { I18nProvider as LinguiI18nProvider } from "@lingui/react";
@@ -26,6 +19,7 @@ import { RouterOutlet } from "@/Components/RouterOutlet";
 import { extractRouteLocale } from "@/Utils/Route/extractRouteLocale";
 import { ServiceContainer } from "react-service-container";
 import { compileMessage } from "@lingui/message-utils/compileMessage";
+import { createLocale, IRegionString } from "@gertvdb/locale";
 
 /**
  * The Router component is the entry point for the localized routing system.
@@ -120,13 +114,15 @@ export const RouterI18nProvider = <TServices extends Record<string, unknown>>(
     }
 
     // For each region pr language create the routes.
-    regions.forEach((region: IRouteRegion) => {
-      const locale = toLocale({ language: route.language, region: region });
-
+    regions.forEach((region: IRegionString) => {
+      const locale = createLocale({
+        languageOrLocale: route.language,
+        region: region,
+      });
       const isFirstRegion = languageFirstRegion[route.language] === region;
 
       const path = createSafeRouterPath({
-        localeOrLanguage: locale,
+        locale: locale,
         path: route.path,
       });
 
@@ -146,8 +142,7 @@ export const RouterI18nProvider = <TServices extends Record<string, unknown>>(
             return currentRouteConfig.loader(
               params,
               { services: context },
-              route.language,
-              region,
+              locale,
             );
           }
         },
@@ -156,12 +151,12 @@ export const RouterI18nProvider = <TServices extends Record<string, unknown>>(
       // Provide redirect to the language route in
       if (isFirstRegion) {
         const redirectPath = createSafeRouterPath({
-          localeOrLanguage: route.language,
+          locale: createLocale({ languageOrLocale: route.language }),
           path: route.path,
         });
 
         const targetPath = createSafeRouterPath({
-          localeOrLanguage: locale,
+          locale: locale,
           path: route.path,
         });
 
@@ -184,7 +179,10 @@ export const RouterI18nProvider = <TServices extends Record<string, unknown>>(
       ) {
         const entryPath = "/";
         const redirectToEntry = createSafeRouterPath({
-          localeOrLanguage: route.language,
+          locale: createLocale({
+            languageOrLocale: route.language,
+            region: region,
+          }),
           path: route.path,
         });
 
@@ -271,12 +269,15 @@ export const RouterI18nProvider = <TServices extends Record<string, unknown>>(
   // Extract locale only on first load or refresh.
   useEffect(() => {
     (async () => {
-      const extractedLocale = extractRouteLocale({
+      const loc = extractRouteLocale({
         pathname: window.location.pathname,
       });
-      const lang = extractedLocale
-        ? extractRouteLanguage({ locale: extractedLocale })
-        : router.defaultLanguage();
+
+      const extractedLocale =
+        loc !== ""
+          ? createLocale({ languageOrLocale: loc })
+          : createLocale({ languageOrLocale: router.defaultLanguage() });
+      const lang = extractedLocale.language;
 
       const messages = await translations(lang, services);
       const compiledMessages = toCompiledMessages(messages);

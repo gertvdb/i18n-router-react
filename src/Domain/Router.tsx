@@ -2,17 +2,19 @@ import type {
   AbsoluteHrefParams,
   HrefParams,
   IRouteId,
-  IRouteLanguage,
-  IRouteLocale,
   IRouter,
   IRouterConfig,
-  IRouteRegion,
   NavigateParams,
 } from "@/Types";
 import { AnyRoute, Route } from "@tanstack/react-router";
 import type { AnyRouter } from "@tanstack/react-router";
-import { toLocale } from "@/Utils/toLocale";
 import { createSafeRouterPath } from "@/Utils/createSafeRouterPath";
+import {
+  createLocale,
+  ILanguageString,
+  ILocale,
+  IRegionString,
+} from "@gertvdb/locale";
 
 export class Router<
   TContext extends Record<string, unknown>,
@@ -21,7 +23,7 @@ export class Router<
   private readonly _router: TRouter;
   private readonly _config: IRouterConfig<TContext>;
   private _isBootstrapped: boolean = false;
-  private _routeIds: Record<string, string>;
+  private readonly _routeIds: Record<string, string>;
 
   constructor(
     config: IRouterConfig<TContext>,
@@ -62,11 +64,11 @@ export class Router<
     state,
     target = "_self",
   }: NavigateParams<T>) {
-    const toRoute = this._route(to.id, to.localeOrLanguage);
+    const toRoute = this._route(to.id, to.locale);
     if (!toRoute) {
       return Promise.reject(
         new Error(
-          `Route (to) for id "${to.id}" and locale "${to.localeOrLanguage}" not found.`,
+          `Route (to) for id "${to.id}" and locale "${to.locale.locale}" not found.`,
         ),
       );
     }
@@ -74,7 +76,7 @@ export class Router<
     if (target === "_blank") {
       const href = this.href({
         id: to.id,
-        locale: to.localeOrLanguage,
+        locale: to.locale,
         query: query,
         params: params,
         hash: hash,
@@ -99,23 +101,7 @@ export class Router<
     }
   }
 
-  path(id: IRouteId, locale: IRouteLocale): string;
-  path(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
-  path(
-    id: IRouteId,
-    localeOrLanguage: IRouteLocale | IRouteLanguage,
-    region?: IRouteRegion,
-  ): string {
-    let locale: IRouteLocale;
-    if (region !== undefined) {
-      locale = toLocale({
-        language: localeOrLanguage as IRouteLanguage,
-        region,
-      });
-    } else {
-      locale = localeOrLanguage as IRouteLocale;
-    }
-
+  path(id: IRouteId, locale: ILocale): string {
     const toRoute = this._route(id, locale);
     if (!toRoute) {
       console.warn(
@@ -127,21 +113,8 @@ export class Router<
     return toRoute.fullPath;
   }
 
-  id(id: IRouteId, locale: IRouteLocale): string;
-  id(id: IRouteId, language: IRouteLanguage, region: IRouteRegion): string;
-  id(
-    id: IRouteId,
-    localeOrLanguage: IRouteLocale | IRouteLanguage,
-    region?: IRouteRegion,
-  ): string {
-    let path: string;
-    if (region !== undefined) {
-      path = this.path(id, localeOrLanguage, region);
-    } else {
-      path = this.path(id, localeOrLanguage);
-    }
-
-    return this._routeIds[path];
+  id(id: IRouteId, locale: ILocale): string {
+    return this._routeIds[this.path(id, locale)];
   }
 
   href({ id, locale, query, params, hash }: HrefParams) {
@@ -215,36 +188,40 @@ export class Router<
         return false;
     }*/
 
-  hasRoute(id: IRouteId, locale: IRouteLocale) {
+  hasRoute(id: IRouteId, locale: ILocale) {
     const route = this._route(id, locale);
     return !!route;
   }
 
-  defaultLanguage(): IRouteLanguage {
-    return this._config.routeEntry.language as IRouteLanguage;
+  defaultLanguage(): ILanguageString {
+    return this._config.routeEntry.language as ILanguageString;
   }
 
-  languages(): IRouteLanguage[] {
+  languages(): ILanguageString[] {
     const languages = this._config.routes.map((route) => route.language);
     return Array.from(new Set(languages));
   }
 
-  regionsByLanguage(): Record<IRouteLanguage, IRouteRegion[]> {
-    const result: Record<IRouteLanguage, Set<IRouteRegion>> = {};
+  regionsByLanguage(): Partial<Record<ILanguageString, IRegionString[]>> {
+    const result: Partial<Record<ILanguageString, Set<IRegionString>>> = {};
 
     this._config.routes.forEach((route) => {
       const language = route.language;
-      const regions = route.regions;
+      const routeRegions = route.regions;
 
       if (!result[language]) {
-        result[language] = new Set();
+        result[language] = new Set<IRegionString>();
       }
-      regions.forEach((region) => result[language].add(region));
+
+      routeRegions.forEach((region) => {
+        result[language]!.add(region);
+      });
     });
 
-    const regions: Record<IRouteLanguage, IRouteRegion[]> = {};
+    const regions: Partial<Record<ILanguageString, IRegionString[]>> = {};
+
     for (const language in result) {
-      regions[language] = Array.from(result[language]);
+      regions[language] = Array.from(result[language]!);
     }
 
     return regions;
@@ -262,10 +239,7 @@ export class Router<
     return this._isBootstrapped;
   }
 
-  private _route(
-    id: IRouteId,
-    localeOrLanguage: IRouteLocale | IRouteLanguage,
-  ): Route | null {
+  private _route(id: IRouteId, locale: ILocale): Route | null {
     const { components, routes } = this._config;
 
     const routeConfig = components[id] ?? null;
@@ -274,17 +248,20 @@ export class Router<
     }
 
     let route = routes.find((route) =>
-      route.regions.some(
-        (region) =>
-          route.id === id &&
-          toLocale({ language: route.language, region }) === localeOrLanguage,
-      ),
+      route.regions.some((region) => {
+        const compareLocale = createLocale({
+          languageOrLocale: route.language,
+          region: region,
+        });
+
+        return route.id === id && compareLocale.locale === locale.locale;
+      }),
     );
 
     // Check for language only link (will redirect to locale link [with first region]).
     if (!route) {
       route = routes.find(
-        (route) => route.id === id && route.language === localeOrLanguage,
+        (route) => route.id === id && route.language === locale.language,
       );
     }
 
@@ -293,7 +270,7 @@ export class Router<
     }
 
     const path = createSafeRouterPath({
-      localeOrLanguage: localeOrLanguage,
+      locale: locale,
       path: route.path,
     });
 

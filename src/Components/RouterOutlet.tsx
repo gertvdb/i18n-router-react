@@ -1,10 +1,10 @@
 import { type FC, useEffect } from "react";
-import { useRouteLanguage } from "@/Hooks/Route/useRouteLanguage";
 import { Outlet as TanstackOutlet } from "@tanstack/react-router";
 import { useRouter } from "@/Hooks/Router/useRouter";
+import { useRouteLocale } from "@/Hooks/Route/useRouteLocale";
 
 export const RouterOutlet: FC = () => {
-  const language = useRouteLanguage();
+  const { language } = useRouteLocale();
   const { i18n } = useRouter();
 
   useEffect(() => {

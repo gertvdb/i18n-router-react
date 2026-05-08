@@ -1,10 +1,11 @@
-import type { IRouterI18N, IRouteLanguage, ITranslations } from "@/Types";
+import type { IRouterI18N, ITranslations } from "@/Types";
 import { I18n as LinguiI18n, type Locale, type Messages } from "@lingui/core";
 import { Trans } from "@lingui/react";
+import { ILanguageString } from "@gertvdb/locale";
 
 export class RouterI18n implements IRouterI18N {
   private readonly _i18n: LinguiI18n;
-  private readonly _loaded: Set<IRouteLanguage> = new Set();
+  private readonly _loaded: Set<ILanguageString> = new Set();
   private readonly _listeners: Set<() => void> = new Set();
 
   constructor(i18n: LinguiI18n) {
@@ -23,12 +24,12 @@ export class RouterI18n implements IRouterI18N {
     return this._i18n._(key, variables);
   }
 
-  activate(language: IRouteLanguage) {
+  activate(language: ILanguageString) {
     this._i18n.activate(language);
   }
 
-  current(): IRouteLanguage {
-    return this._i18n.locale as IRouteLanguage;
+  current(): ILanguageString {
+    return this._i18n.locale as ILanguageString;
   }
 
   subscribe(listener: () => void): () => void {
@@ -40,11 +41,11 @@ export class RouterI18n implements IRouterI18N {
     this._listeners.forEach((listener) => listener());
   }
 
-  isLoaded(language: IRouteLanguage): boolean {
+  isLoaded(language: ILanguageString): boolean {
     return this._loaded.has(language);
   }
 
-  load(language: IRouteLanguage, messages: ITranslations): void {
+  load(language: ILanguageString, messages: ITranslations): void {
     this._i18n.load(language as Locale, messages as Messages);
     this._loaded.add(language);
     this._notify();

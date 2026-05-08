@@ -9,9 +9,7 @@ export { RouterI18nContext } from "./Context/RouterI18nContext";
 
 // Hooks
 // -- Route
-export { useRouteLanguage } from "./Hooks/Route/useRouteLanguage";
 export { useRouteLocale } from "./Hooks/Route/useRouteLocale";
-export { useRouteRegion } from "./Hooks/Route/useRouteRegion";
 export { useRouteParams } from "./Hooks/Route/useRouteParams";
 export { useRouteQuery } from "./Hooks/Route/useRouteQuery";
 export { useRouteLoaderData } from "@/Hooks/Route/useRouteLoaderData";
