@@ -14,7 +14,7 @@ import type { AnyRouter } from "@tanstack/react-router";
 import { toLocale } from "@/Utils/toLocale";
 import { createSafeRouterPath } from "@/Utils/createSafeRouterPath";
 
-export class RouterCore<
+export class Router<
   TContext extends Record<string, unknown>,
   TRouter extends AnyRouter,
 > implements IRouter {
@@ -37,7 +37,7 @@ export class RouterCore<
     TContext extends Record<string, unknown>,
     TRouter extends AnyRouter,
   >(config: IRouterConfig<TContext>, router: TRouter, routes: AnyRoute[]) {
-    return new RouterCore(config, router, routes);
+    return new Router(config, router, routes);
   }
 
   reload() {

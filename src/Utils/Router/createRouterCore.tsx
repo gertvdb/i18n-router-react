@@ -1,5 +1,5 @@
 import type { IRouter, IRouterConfig } from "@/Types.tsx";
-import { RouterCore } from "@/Domain/RouterCore";
+import { Router } from "@/Domain/Router";
 
 import type { AnyRoute, AnyRouter } from "@tanstack/react-router";
 
@@ -15,5 +15,5 @@ export const createRouterCore = <
   router: TRouter;
   routes: AnyRoute[];
 }): IRouter => {
-  return RouterCore.new(config, router, routes);
+  return Router.new(config, router, routes);
 };

@@ -1,4 +1,4 @@
 import type { IRouter } from "@/Types";
 import { createContext } from "react";
 
-export const RouterCoreContext = createContext<IRouter | undefined>(undefined);
+export const RouterContext = createContext<IRouter | undefined>(undefined);

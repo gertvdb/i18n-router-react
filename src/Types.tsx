@@ -359,7 +359,7 @@ export type ITranslations = Record<string, string>;
 /**
  * Props for the Router component.
  */
-export interface RouterProps<TServices = Record<string, unknown>> {
+export interface Router18nProviderProps<TServices = Record<string, unknown>> {
   /**
    * Initial services for the router.
    */

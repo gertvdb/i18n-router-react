@@ -1,9 +1,8 @@
 import {
-  IRoute,
   IRouter,
   IRouteRegion,
   ITranslations,
-  RouterProps,
+  Router18nProviderProps,
 } from "@/Types";
 import { useEffect, useMemo } from "react";
 import {
@@ -12,9 +11,9 @@ import {
   createRoute,
   createRouter,
   redirect,
-  RouterProvider,
+  RouterProvider as TanstackRouterProvider,
 } from "@tanstack/react-router";
-import { RouterCoreContext } from "@/Context/RouterCoreContext";
+import { RouterContext } from "@/Context/RouterContext";
 import { toLocale } from "@/Utils/toLocale";
 import { createSafeRouterPath } from "@/Utils/createSafeRouterPath";
 import { createRouterCore } from "@/Utils//Router/createRouterCore";
@@ -35,8 +34,8 @@ import { compileMessage } from "@lingui/message-utils/compileMessage";
  * @param props - The props for the Router component.
  * @returns A RouterProvider wrapped with I18n and Context providers.
  */
-export const Router = <TServices extends Record<string, unknown>>(
-  props: RouterProps<TServices>,
+export const RouterI18nProvider = <TServices extends Record<string, unknown>>(
+  props: Router18nProviderProps<TServices>,
 ) => {
   const { config, translations, services } = props;
 
@@ -299,9 +298,9 @@ export const Router = <TServices extends Record<string, unknown>>(
     <ServiceContainer providers={providers}>
       <RouterI18nContext.Provider value={i18n}>
         <LinguiI18nProvider i18n={linguiI18N}>
-          <RouterCoreContext.Provider value={router}>
-            <RouterProvider router={tanstackRouter} />
-          </RouterCoreContext.Provider>
+          <RouterContext.Provider value={router}>
+            <TanstackRouterProvider router={tanstackRouter} />
+          </RouterContext.Provider>
         </LinguiI18nProvider>
       </RouterI18nContext.Provider>
     </ServiceContainer>

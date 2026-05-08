@@ -882,7 +882,7 @@ var require_parser = __commonJS({
     __name(parse2, "parse");
   }
 });
-var RouterCoreContext = createContext(void 0);
+var RouterContext = createContext(void 0);
 
 // src/Utils/toLocale.tsx
 var toLocale = /* @__PURE__ */ __name(({
@@ -901,8 +901,8 @@ var createSafeRouterPath = /* @__PURE__ */ __name(({
   return "/" + localeOrLanguage.toLowerCase() + safePath.toLowerCase();
 }, "createSafeRouterPath");
 
-// src/Domain/RouterCore.tsx
-var _RouterCore = class _RouterCore {
+// src/Domain/Router.tsx
+var _Router = class _Router {
   constructor(config, router, routes) {
     this._isBootstrapped = false;
     this._config = config;
@@ -910,7 +910,7 @@ var _RouterCore = class _RouterCore {
     this._routeIds = this._buildPathToIdMap(routes, router);
   }
   static new(config, router, routes) {
-    return new _RouterCore(config, router, routes);
+    return new _Router(config, router, routes);
   }
   reload() {
     window.location.reload();
@@ -1131,8 +1131,8 @@ var _RouterCore = class _RouterCore {
     return map;
   }
 };
-__name(_RouterCore, "RouterCore");
-var RouterCore = _RouterCore;
+__name(_Router, "Router");
+var Router = _Router;
 
 // src/Utils/Router/createRouterCore.tsx
 var createRouterCore = /* @__PURE__ */ __name(({
@@ -1140,7 +1140,7 @@ var createRouterCore = /* @__PURE__ */ __name(({
   router,
   routes
 }) => {
-  return RouterCore.new(config, router, routes);
+  return Router.new(config, router, routes);
 }, "createRouterCore");
 
 // src/Utils/Route/extractRouteLanguage.tsx
@@ -1203,16 +1203,20 @@ var useRouteLanguage = /* @__PURE__ */ __name(() => useRouterState({
     locale: state.location.pathname.split("/")[1]
   }), "select")
 }), "useRouteLanguage");
-var useRouterI18n = /* @__PURE__ */ __name(() => {
-  const context = useContext(RouterI18nContext);
-  if (!context) {
-    throw new Error("useRouteI18n must be used within a <Router> Provider");
+var useRouter = /* @__PURE__ */ __name(() => {
+  const routerContext = useContext(RouterContext);
+  if (!routerContext) {
+    throw new Error("useRouter must be used within a <Router> Provider");
   }
-  return context;
-}, "useRouterI18n");
+  const i18nContext = useContext(RouterI18nContext);
+  if (!i18nContext) {
+    throw new Error("useRouter must be used within a <Router> Provider");
+  }
+  return { router: routerContext, i18n: i18nContext };
+}, "useRouter");
 var RouterOutlet = /* @__PURE__ */ __name(() => {
   const language = useRouteLanguage();
-  const i18n = useRouterI18n();
+  const { i18n } = useRouter();
   useEffect(() => {
     if (i18n.current() !== language) {
       i18n.activate(language);
@@ -1573,7 +1577,7 @@ Message: ${message}`);
   }
 }
 __name(compileMessage, "compileMessage");
-var Router = /* @__PURE__ */ __name((props) => {
+var RouterI18nProvider = /* @__PURE__ */ __name((props) => {
   const { config, translations, services } = props;
   const {
     routes: routesConfig,
@@ -1776,8 +1780,8 @@ var Router = /* @__PURE__ */ __name((props) => {
       i18n.load(lang, compiledMessages);
     });
   }, [i18n, translations, router, services]);
-  return /* @__PURE__ */ jsx(ServiceContainer, { providers, children: /* @__PURE__ */ jsx(RouterI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsx(I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsx(RouterCoreContext.Provider, { value: router, children: /* @__PURE__ */ jsx(RouterProvider, { router: tanstackRouter }) }) }) }) });
-}, "Router");
+  return /* @__PURE__ */ jsx(ServiceContainer, { providers, children: /* @__PURE__ */ jsx(RouterI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsx(I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsx(RouterContext.Provider, { value: router, children: /* @__PURE__ */ jsx(RouterProvider, { router: tanstackRouter }) }) }) }) });
+}, "RouterI18nProvider");
 function toCompiledMessages(rawMessages) {
   const compiledMessages = {};
   Object.keys(rawMessages).forEach((key) => {
@@ -1879,19 +1883,12 @@ function useRouteContext({
   return useRouteContext$1({ from: id });
 }
 __name(useRouteContext, "useRouteContext");
-var useRouter = /* @__PURE__ */ __name(() => {
-  const context = useContext(RouterCoreContext);
-  if (!context) {
-    throw new Error("useRouter must be used within a <Router> Provider");
-  }
-  return context;
-}, "useRouter");
 function useRouterService(serviceToken) {
   return useService(serviceToken);
 }
 __name(useRouterService, "useRouterService");
 var useRouterBootstrapped = /* @__PURE__ */ __name(() => {
-  const router = useRouter();
+  const { router } = useRouter();
   return useRouterState({
     select: /* @__PURE__ */ __name(() => router.isBootstrapped(), "select")
   });
@@ -1905,7 +1902,7 @@ var useRouterIsTransitioning = /* @__PURE__ */ __name(() => {
   return isTransitioning;
 }, "useRouterIsTransitioning");
 var useTranslationLoaded = /* @__PURE__ */ __name(() => {
-  const i18n = useRouterI18n();
+  const { i18n } = useRouter();
   const language = useRouteLanguage();
   return useSyncExternalStore(
     (callback) => i18n.subscribe(callback),
@@ -1933,6 +1930,6 @@ var createRouterConfig = /* @__PURE__ */ __name(({
   };
 }, "createRouterConfig");
 
-export { Router, RouterCoreContext, RouterI18nContext, createRouterConfig, useRouteContext, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterI18n, useRouterIsTransitioning, useRouterService, useTranslationLoaded };
+export { RouterContext, RouterI18nContext, RouterI18nProvider, createRouterConfig, useRouteContext, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterIsTransitioning, useRouterService, useTranslationLoaded };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

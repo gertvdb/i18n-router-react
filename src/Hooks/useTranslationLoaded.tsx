@@ -1,9 +1,9 @@
 import { useSyncExternalStore } from "react";
-import { useRouterI18n } from "@/Hooks/Router/useRouterI18n";
 import { useRouteLanguage } from "@/Hooks/Route/useRouteLanguage";
+import { useRouter } from "@/Hooks/Router/useRouter";
 
 export const useTranslationLoaded = (): boolean => {
-  const i18n = useRouterI18n();
+  const { i18n } = useRouter();
   const language = useRouteLanguage();
 
   return useSyncExternalStore(

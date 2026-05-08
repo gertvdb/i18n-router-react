@@ -1,7 +1,7 @@
-import * as react_jsx_runtime from 'react/jsx-runtime';
 import * as React from 'react';
 import React__default from 'react';
 import { NotFoundRouteProps, ErrorComponentProps } from '@tanstack/react-router';
+import * as react_jsx_runtime from 'react/jsx-runtime';
 
 /**
  * ID of a route context.
@@ -307,7 +307,7 @@ type ITranslations = Record<string, string>;
 /**
  * Props for the Router component.
  */
-interface RouterProps<TServices = Record<string, unknown>> {
+interface Router18nProviderProps<TServices = Record<string, unknown>> {
     /**
      * Initial services for the router.
      */
@@ -348,9 +348,9 @@ interface UseRouterServiceProps<T, R = any> {
  * @param props - The props for the Router component.
  * @returns A RouterProvider wrapped with I18n and Context providers.
  */
-declare const Router: <TServices extends Record<string, unknown>>(props: RouterProps<TServices>) => react_jsx_runtime.JSX.Element;
+declare const RouterI18nProvider: <TServices extends Record<string, unknown>>(props: Router18nProviderProps<TServices>) => react_jsx_runtime.JSX.Element;
 
-declare const RouterCoreContext: React.Context<IRouter | undefined>;
+declare const RouterContext: React.Context<IRouter | undefined>;
 
 declare const RouterI18nContext: React.Context<IRouterI18N | undefined>;
 
@@ -368,9 +368,10 @@ declare function useRouteLoaderData<T, TSelected = T>({ router, route, select, }
 
 declare function useRouteContext<T, TSelected = T>({ router, route, select, }: RouteContextProps<T, TSelected>): TSelected | T;
 
-declare const useRouter: () => IRouter;
-
-declare const useRouterI18n: () => IRouterI18N;
+declare const useRouter: () => {
+    router: IRouter;
+    i18n: IRouterI18N;
+};
 
 declare function useRouterService<T, R = any>(serviceToken: T): R;
 
@@ -389,4 +390,4 @@ declare const createRouterConfig: ({ routeEntry, components, routes, routeContex
     errorComponent: (props: ErrorComponentProps) => React__default.ReactNode;
 }) => IRouterConfig;
 
-export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRouterI18N, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, Router, RouterCoreContext, RouterI18nContext, type RouterProps, type UseRouterServiceProps, createRouterConfig, useRouteContext, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterI18n, useRouterIsTransitioning, useRouterService, useTranslationLoaded };
+export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRouterI18N, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, type Router18nProviderProps, RouterContext, RouterI18nContext, RouterI18nProvider, type UseRouterServiceProps, createRouterConfig, useRouteContext, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterIsTransitioning, useRouterService, useTranslationLoaded };

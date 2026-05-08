@@ -1,8 +1,10 @@
-export { Router } from "./Router";
 export * from "./Types";
 
+// Provider
+export { RouterI18nProvider } from "./Provider/RouterI18nProvider";
+
 // Contexts
-export { RouterCoreContext } from "./Context/RouterCoreContext";
+export { RouterContext } from "./Context/RouterContext";
 export { RouterI18nContext } from "./Context/RouterI18nContext";
 
 // Hooks
@@ -17,7 +19,6 @@ export { useRouteContext } from "@/Hooks/Route/useRouteContext";
 
 // -- Router
 export { useRouter } from "./Hooks/Router/useRouter";
-export { useRouterI18n } from "./Hooks/Router/useRouterI18n";
 export { useRouterService } from "@/Hooks/Router/useRouterService";
 export { useRouterBootstrapped } from "./Hooks/Router/useRouterBootstrapped";
 export { useRouterIsTransitioning } from "./Hooks/Router/useRouterIsTransitioning";
