@@ -903,7 +903,7 @@ var createSafeRouterPath = /* @__PURE__ */ __name(({
   return "/" + localeOrLanguage.toLowerCase() + safePath.toLowerCase();
 }, "createSafeRouterPath");
 
-// src/RouterCore.tsx
+// src/Domain/RouterCore.tsx
 var _RouterCore = class _RouterCore {
   constructor(config, router, routes) {
     this._isBootstrapped = false;
@@ -1136,7 +1136,7 @@ var _RouterCore = class _RouterCore {
 __name(_RouterCore, "RouterCore");
 var RouterCore = _RouterCore;
 
-// src/Utils/createRouterCore.tsx
+// src/Utils/Router/createRouterCore.tsx
 var createRouterCore = /* @__PURE__ */ __name(({
   config,
   router,
@@ -1145,12 +1145,12 @@ var createRouterCore = /* @__PURE__ */ __name(({
   return RouterCore.new(config, router, routes);
 }, "createRouterCore");
 
-// src/Utils/extractLanguage.tsx
-var extractLanguage = /* @__PURE__ */ __name(({
+// src/Utils/Route/extractRouteLanguage.tsx
+var extractRouteLanguage = /* @__PURE__ */ __name(({
   locale
 }) => {
   return new Intl.Locale(locale).language.toLowerCase();
-}, "extractLanguage");
+}, "extractRouteLanguage");
 var _RouterI18n = class _RouterI18n {
   constructor(i18n) {
     this._loaded = /* @__PURE__ */ new Set();
@@ -1191,7 +1191,7 @@ var _RouterI18n = class _RouterI18n {
 __name(_RouterI18n, "RouterI18n");
 var RouterI18n = _RouterI18n;
 
-// src/Utils/createRouterI18n.tsx
+// src/Utils/Router/createRouterI18n.tsx
 var createRouterI18n = /* @__PURE__ */ __name(({
   i18n
 }) => {
@@ -1201,7 +1201,7 @@ var RouterI18nContext = react.createContext(
   void 0
 );
 var useRouteLanguage = /* @__PURE__ */ __name(() => reactRouter.useRouterState({
-  select: /* @__PURE__ */ __name((state) => extractLanguage({
+  select: /* @__PURE__ */ __name((state) => extractRouteLanguage({
     locale: state.location.pathname.split("/")[1]
   }), "select")
 }), "useRouteLanguage");
@@ -1223,12 +1223,12 @@ var RouterOutlet = /* @__PURE__ */ __name(() => {
   return /* @__PURE__ */ jsxRuntime.jsx(reactRouter.Outlet, {});
 }, "RouterOutlet");
 
-// src/Utils/extractLocale.tsx
-var extractLocale = /* @__PURE__ */ __name(({
+// src/Utils/Route/extractRouteLocale.tsx
+var extractRouteLocale = /* @__PURE__ */ __name(({
   pathname
 }) => {
   return pathname.split("/")[1].toLowerCase();
-}, "extractLocale");
+}, "extractRouteLocale");
 
 // node_modules/@lingui/message-utils/dist/compileMessage.mjs
 var import_parser = __toESM(require_parser());
@@ -1575,17 +1575,6 @@ Message: ${message}`);
   }
 }
 __name(compileMessage, "compileMessage");
-
-// src/Utils/toCompiledMessages.tsx
-function toCompiledMessages(rawMessages) {
-  const compiledMessages = {};
-  Object.keys(rawMessages).forEach((key) => {
-    const message = rawMessages[key];
-    compiledMessages[key] = compileMessage(message);
-  });
-  return compiledMessages;
-}
-__name(toCompiledMessages, "toCompiledMessages");
 var Router = /* @__PURE__ */ __name((props) => {
   const { config, translations, services } = props;
   const {
@@ -1771,10 +1760,10 @@ var Router = /* @__PURE__ */ __name((props) => {
   }, [services]);
   react.useEffect(() => {
     (async () => {
-      const extractedLocale = extractLocale({
+      const extractedLocale = extractRouteLocale({
         pathname: window.location.pathname
       });
-      const lang = extractedLocale ? extractLanguage({ locale: extractedLocale }) : router.defaultLanguage();
+      const lang = extractedLocale ? extractRouteLanguage({ locale: extractedLocale }) : router.defaultLanguage();
       const messages = await translations(lang, services);
       const compiledMessages = toCompiledMessages(messages);
       linguiI18N.load(lang, compiledMessages);
@@ -1791,12 +1780,21 @@ var Router = /* @__PURE__ */ __name((props) => {
   }, [i18n, translations, router, services]);
   return /* @__PURE__ */ jsxRuntime.jsx(reactServiceContainer.ServiceContainer, { providers, children: /* @__PURE__ */ jsxRuntime.jsx(RouterI18nContext.Provider, { value: i18n, children: /* @__PURE__ */ jsxRuntime.jsx(react$1.I18nProvider, { i18n: linguiI18N, children: /* @__PURE__ */ jsxRuntime.jsx(RouterCoreContext.Provider, { value: router, children: /* @__PURE__ */ jsxRuntime.jsx(reactRouter.RouterProvider, { router: tanstackRouter }) }) }) }) });
 }, "Router");
+function toCompiledMessages(rawMessages) {
+  const compiledMessages = {};
+  Object.keys(rawMessages).forEach((key) => {
+    const message = rawMessages[key];
+    compiledMessages[key] = compileMessage(message);
+  });
+  return compiledMessages;
+}
+__name(toCompiledMessages, "toCompiledMessages");
 var useRouteLocale = /* @__PURE__ */ __name(() => reactRouter.useRouterState({
-  select: /* @__PURE__ */ __name((state) => extractLocale({ pathname: state.location.pathname }), "select")
+  select: /* @__PURE__ */ __name((state) => extractRouteLocale({ pathname: state.location.pathname }), "select")
 }), "useRouteLocale");
 
-// src/Utils/extractRegion.tsx
-var extractRegion = /* @__PURE__ */ __name(({
+// src/Utils/Route/extractRouteRegion.tsx
+var extractRouteRegion = /* @__PURE__ */ __name(({
   locale
 }) => {
   const region = new Intl.Locale(locale).region;
@@ -1804,7 +1802,7 @@ var extractRegion = /* @__PURE__ */ __name(({
     throw new Error("a locale must contain a region");
   }
   return region.toLowerCase();
-}, "extractRegion");
+}, "extractRouteRegion");
 
 // src/Hooks/Route/useRouteRegion.tsx
 var useRouteRegion = /* @__PURE__ */ __name(() => {
@@ -1813,7 +1811,7 @@ var useRouteRegion = /* @__PURE__ */ __name(() => {
     return null;
   }
   try {
-    return extractRegion({ locale });
+    return extractRouteRegion({ locale });
   } catch (e) {
     return null;
   }
@@ -1918,7 +1916,7 @@ var useTranslationLoaded = /* @__PURE__ */ __name(() => {
   );
 }, "useTranslationLoaded");
 
-// src/Utils/createRouterConfig.tsx
+// src/Utils/Router/createRouterConfig.tsx
 var createRouterConfig = /* @__PURE__ */ __name(({
   routeEntry,
   components,
@@ -1941,9 +1939,6 @@ exports.Router = Router;
 exports.RouterCoreContext = RouterCoreContext;
 exports.RouterI18nContext = RouterI18nContext;
 exports.createRouterConfig = createRouterConfig;
-exports.extractLanguage = extractLanguage;
-exports.extractRegion = extractRegion;
-exports.toLocale = toLocale;
 exports.useRouteContext = useRouteContext;
 exports.useRouteLanguage = useRouteLanguage;
 exports.useRouteLoaderData = useRouteLoaderData;

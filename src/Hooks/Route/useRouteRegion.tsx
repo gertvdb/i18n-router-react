@@ -1,5 +1,5 @@
 import type { IRouteRegion } from "@/Types";
-import { extractRegion } from "@/Utils/extractRegion";
+import { extractRouteRegion } from "@/Utils/Route/extractRouteRegion";
 import { useRouteLocale } from "@/Hooks/Route/useRouteLocale";
 
 // Redirect url's are created for every language to the first region of that language
@@ -14,7 +14,7 @@ export const useRouteRegion = (): IRouteRegion | null => {
   }
 
   try {
-    return extractRegion({ locale }) as IRouteRegion;
+    return extractRouteRegion({ locale }) as IRouteRegion;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e: unknown) {
     return null;

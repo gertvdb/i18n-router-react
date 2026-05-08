@@ -1,6 +1,6 @@
 import type { IRouteLocale, IRouteRegion } from "@/Types.tsx";
 
-export const extractRegion = ({
+export const extractRouteRegion = ({
   locale,
 }: {
   locale: IRouteLocale;

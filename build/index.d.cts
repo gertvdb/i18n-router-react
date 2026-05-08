@@ -389,17 +389,4 @@ declare const createRouterConfig: ({ routeEntry, components, routes, routeContex
     errorComponent: (props: ErrorComponentProps) => React__default.ReactNode;
 }) => IRouterConfig;
 
-declare const extractLanguage: ({ locale, }: {
-    locale: IRouteLocale;
-}) => IRouteLanguage;
-
-declare const extractRegion: ({ locale, }: {
-    locale: IRouteLocale;
-}) => IRouteRegion;
-
-declare const toLocale: ({ language, region, }: {
-    language: IRouteLanguage;
-    region: IRouteRegion;
-}) => IRouteLocale;
-
-export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRouterI18N, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, Router, RouterCoreContext, RouterI18nContext, type RouterProps, type UseRouterServiceProps, createRouterConfig, extractLanguage, extractRegion, toLocale, useRouteContext, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterI18n, useRouterIsTransitioning, useRouterService, useTranslationLoaded };
+export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteId, type IRouteLanguage, type IRouteLocale, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteRegion, type IRouteTo, type IRouter, type IRouterConfig, type IRouterI18N, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, Router, RouterCoreContext, RouterI18nContext, type RouterProps, type UseRouterServiceProps, createRouterConfig, useRouteContext, useRouteLanguage, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouteRegion, useRouter, useRouterBootstrapped, useRouterI18n, useRouterIsTransitioning, useRouterService, useTranslationLoaded };

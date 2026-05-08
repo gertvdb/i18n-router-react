@@ -14,19 +14,19 @@ import {
   redirect,
   RouterProvider,
 } from "@tanstack/react-router";
-import { RouterCoreContext } from "@/RouterCoreContext";
+import { RouterCoreContext } from "@/Context/RouterCoreContext";
 import { toLocale } from "@/Utils/toLocale";
 import { createSafeRouterPath } from "@/Utils/createSafeRouterPath";
-import { createRouterCore } from "@/Utils/createRouterCore";
-import { extractLanguage } from "@/Utils/extractLanguage";
-import { I18n as LinguiI18n } from "@lingui/core";
-import { createRouterI18n } from "@/Utils/createRouterI18n";
+import { createRouterCore } from "@/Utils//Router/createRouterCore";
+import { extractRouteLanguage } from "@/Utils/Route/extractRouteLanguage";
+import { I18n as LinguiI18n, type Messages } from "@lingui/core";
+import { createRouterI18n } from "@/Utils/Router/createRouterI18n";
 import { I18nProvider as LinguiI18nProvider } from "@lingui/react";
-import { RouterI18nContext } from "@/RouterI18nContext";
-import { RouterOutlet } from "@/RouterOutlet";
-import { extractLocale } from "@/Utils/extractLocale";
-import { toCompiledMessages } from "@/Utils/toCompiledMessages";
+import { RouterI18nContext } from "@/Context/RouterI18nContext";
+import { RouterOutlet } from "@/Components/RouterOutlet";
+import { extractRouteLocale } from "@/Utils/Route/extractRouteLocale";
 import { ServiceContainer } from "react-service-container";
+import { compileMessage } from "@lingui/message-utils/compileMessage";
 
 /**
  * The Router component is the entry point for the localized routing system.
@@ -272,11 +272,11 @@ export const Router = <TServices extends Record<string, unknown>>(
   // Extract locale only on first load or refresh.
   useEffect(() => {
     (async () => {
-      const extractedLocale = extractLocale({
+      const extractedLocale = extractRouteLocale({
         pathname: window.location.pathname,
       });
       const lang = extractedLocale
-        ? extractLanguage({ locale: extractedLocale })
+        ? extractRouteLanguage({ locale: extractedLocale })
         : router.defaultLanguage();
 
       const messages = await translations(lang, services);
@@ -307,3 +307,14 @@ export const Router = <TServices extends Record<string, unknown>>(
     </ServiceContainer>
   );
 };
+
+function toCompiledMessages(rawMessages: Record<string, string>): Messages {
+  const compiledMessages: Messages = {};
+
+  Object.keys(rawMessages).forEach((key) => {
+    const message = rawMessages[key];
+    compiledMessages[key] = compileMessage(message);
+  });
+
+  return compiledMessages;
+}

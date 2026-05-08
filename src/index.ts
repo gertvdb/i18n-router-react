@@ -2,8 +2,8 @@ export { Router } from "./Router";
 export * from "./Types";
 
 // Contexts
-export { RouterCoreContext } from "./RouterCoreContext";
-export { RouterI18nContext } from "./RouterI18nContext";
+export { RouterCoreContext } from "./Context/RouterCoreContext";
+export { RouterI18nContext } from "./Context/RouterI18nContext";
 
 // Hooks
 // -- Route
@@ -26,7 +26,4 @@ export { useRouterIsTransitioning } from "./Hooks/Router/useRouterIsTransitionin
 export { useTranslationLoaded } from "./Hooks/useTranslationLoaded";
 
 // Utils
-export { createRouterConfig } from "./Utils/createRouterConfig";
-export { extractLanguage } from "./Utils/extractLanguage";
-export { extractRegion } from "./Utils/extractRegion";
-export { toLocale } from "./Utils/toLocale";
+export { createRouterConfig } from "./Utils/Router/createRouterConfig";

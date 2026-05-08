@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import type { IRouter } from "@/Types";
-import { RouterCoreContext } from "@/RouterCoreContext";
+import { RouterCoreContext } from "@/Context/RouterCoreContext";
 
 export const useRouter = (): IRouter => {
   const context = useContext(RouterCoreContext);
