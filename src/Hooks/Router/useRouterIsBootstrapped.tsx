@@ -1,7 +1,7 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useRouter } from "@/Hooks/Router/useRouter";
 
-export const useRouterBootstrapped = (): boolean => {
+export const useRouterIsBootstrapped = (): boolean => {
   const { router } = useRouter();
 
   return useRouterState({

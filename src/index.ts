@@ -13,16 +13,21 @@ export { useRouteLocale } from "./Hooks/Route/useRouteLocale";
 export { useRouteParams } from "./Hooks/Route/useRouteParams";
 export { useRouteQuery } from "./Hooks/Route/useRouteQuery";
 export { useRouteLoaderData } from "@/Hooks/Route/useRouteLoaderData";
+
+// TODO : look at these with useSevice
 export { useRouteContext } from "@/Hooks/Route/useRouteContext";
 
 // -- Router
 export { useRouter } from "./Hooks/Router/useRouter";
-export { useRouterService } from "@/Hooks/Router/useRouterService";
-export { useRouterBootstrapped } from "./Hooks/Router/useRouterBootstrapped";
+export { useRouterIsBootstrapped } from "./Hooks/Router/useRouterIsBootstrapped";
 export { useRouterIsTransitioning } from "./Hooks/Router/useRouterIsTransitioning";
 
 // -- I18N
-export { useTranslationLoaded } from "./Hooks/useTranslationLoaded";
+export { useI18nIsLoaded } from "./Hooks/I18n/useI18nIsLoaded";
+export { useI18n } from "@/Hooks/I18n/useI18n";
+
+// -- Service Container
+export { useService } from "@/Hooks/ServiceContainer/useService";
 
 // Utils
 export { createRouterConfig } from "./Utils/Router/createRouterConfig";

@@ -357,16 +357,21 @@ declare function useRouteContext<T, TSelected = T>({ router, route, select, }: R
 
 declare const useRouter: () => {
     router: IRouter;
-    i18n: IRouterI18N;
 };
 
-declare function useRouterService<T, R = any>(serviceToken: T): R;
-
-declare const useRouterBootstrapped: () => boolean;
+declare const useRouterIsBootstrapped: () => boolean;
 
 declare const useRouterIsTransitioning: () => boolean;
 
-declare const useTranslationLoaded: () => boolean;
+declare const useI18nIsLoaded: () => boolean;
+
+declare const useI18n: () => {
+    t: (key: string, variables?: Record<string, unknown>) => string;
+    trans: (key: string, variables: Record<string, unknown>) => React__default.ReactElement | null;
+    language: ILanguageString;
+};
+
+declare function useService<T, R = any>(serviceToken: T): R;
 
 declare const createRouterConfig: ({ routeEntry, components, routes, routeContexts, notFoundComponent, errorComponent, }: {
     routeEntry: IRouteEntry;
@@ -377,4 +382,4 @@ declare const createRouterConfig: ({ routeEntry, components, routes, routeContex
     errorComponent: (props: ErrorComponentProps) => React__default.ReactNode;
 }) => IRouterConfig;
 
-export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteId, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteTo, type IRouter, type IRouterConfig, type IRouterI18N, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, type Router18nProviderProps, RouterContext, RouterI18nContext, RouterI18nProvider, type UseRouterServiceProps, createRouterConfig, useRouteContext, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouter, useRouterBootstrapped, useRouterIsTransitioning, useRouterService, useTranslationLoaded };
+export { type AbsoluteHrefParams, type HrefParams, type IContextRoute, type ILocaleRoute, type IRoute, type IRouteComponent, type IRouteComponents, type IRouteContextId, type IRouteContexts, type IRouteEntry, type IRouteId, type IRoutePath, type IRouteQueryProps, type IRouteRedirect, type IRouteRedirects, type IRouteTo, type IRouter, type IRouterConfig, type IRouterI18N, type IRoutes, type ITranslations, type NavigateMethod, type NavigateParams, type NavigateTarget, type RouteContextProps, type RouteLoaderDataProps, type RouteParamsProps, type RoutePathProps, type Router18nProviderProps, RouterContext, RouterI18nContext, RouterI18nProvider, type UseRouterServiceProps, createRouterConfig, useI18n, useI18nIsLoaded, useRouteContext, useRouteLoaderData, useRouteLocale, useRouteParams, useRouteQuery, useRouter, useRouterIsBootstrapped, useRouterIsTransitioning, useService };

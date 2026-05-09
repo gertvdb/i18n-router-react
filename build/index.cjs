@@ -1180,11 +1180,7 @@ var useRouter = /* @__PURE__ */ __name(() => {
   if (!routerContext) {
     throw new Error("useRouter must be used within a <Router> Provider");
   }
-  const i18nContext = react.useContext(RouterI18nContext);
-  if (!i18nContext) {
-    throw new Error("useRouter must be used within a <Router> Provider");
-  }
-  return { router: routerContext, i18n: i18nContext };
+  return { router: routerContext };
 }, "useRouter");
 
 // src/Utils/Route/extractRouteLocale.tsx
@@ -1848,16 +1844,12 @@ function useRouteContext({
   return reactRouter.useRouteContext({ from: id });
 }
 __name(useRouteContext, "useRouteContext");
-function useRouterService(serviceToken) {
-  return reactServiceContainer.useService(serviceToken);
-}
-__name(useRouterService, "useRouterService");
-var useRouterBootstrapped = /* @__PURE__ */ __name(() => {
+var useRouterIsBootstrapped = /* @__PURE__ */ __name(() => {
   const { router } = useRouter();
   return reactRouter.useRouterState({
     select: /* @__PURE__ */ __name(() => router.isBootstrapped(), "select")
   });
-}, "useRouterBootstrapped");
+}, "useRouterIsBootstrapped");
 var useRouterIsTransitioning = /* @__PURE__ */ __name(() => {
   const { isTransitioning } = reactRouter.useRouterState({
     select: /* @__PURE__ */ __name((state) => ({
@@ -1866,15 +1858,30 @@ var useRouterIsTransitioning = /* @__PURE__ */ __name(() => {
   });
   return isTransitioning;
 }, "useRouterIsTransitioning");
-var useTranslationLoaded = /* @__PURE__ */ __name(() => {
-  const { i18n } = useRouter();
-  const { language } = useRouteLocale();
+var useI18nIsLoaded = /* @__PURE__ */ __name(() => {
+  const i18n = react.useContext(RouterI18nContext);
+  if (!i18n) {
+    throw new Error(
+      "useI18nTranslationLoaded must be used within a <Router> Provider"
+    );
+  }
   return react.useSyncExternalStore(
     (callback) => i18n.subscribe(callback),
-    () => i18n.isLoaded(language),
+    () => i18n.isLoaded(i18n.current()),
     () => false
   );
-}, "useTranslationLoaded");
+}, "useI18nIsLoaded");
+var useI18n = /* @__PURE__ */ __name(() => {
+  const i18n = react.useContext(RouterI18nContext);
+  if (!i18n) {
+    throw new Error("useRouter must be used within a <Router> Provider");
+  }
+  return { trans: i18n.trans, t: i18n.t, language: i18n.current() };
+}, "useI18n");
+function useService(serviceToken) {
+  return reactServiceContainer.useService(serviceToken);
+}
+__name(useService, "useService");
 
 // src/Utils/Router/createRouterConfig.tsx
 var createRouterConfig = /* @__PURE__ */ __name(({
@@ -1899,15 +1906,16 @@ exports.RouterContext = RouterContext;
 exports.RouterI18nContext = RouterI18nContext;
 exports.RouterI18nProvider = RouterI18nProvider;
 exports.createRouterConfig = createRouterConfig;
+exports.useI18n = useI18n;
+exports.useI18nIsLoaded = useI18nIsLoaded;
 exports.useRouteContext = useRouteContext;
 exports.useRouteLoaderData = useRouteLoaderData;
 exports.useRouteLocale = useRouteLocale;
 exports.useRouteParams = useRouteParams;
 exports.useRouteQuery = useRouteQuery;
 exports.useRouter = useRouter;
-exports.useRouterBootstrapped = useRouterBootstrapped;
+exports.useRouterIsBootstrapped = useRouterIsBootstrapped;
 exports.useRouterIsTransitioning = useRouterIsTransitioning;
-exports.useRouterService = useRouterService;
-exports.useTranslationLoaded = useTranslationLoaded;
+exports.useService = useService;
 //# sourceMappingURL=index.cjs.map
 //# sourceMappingURL=index.cjs.map
