@@ -8,12 +8,12 @@ export const useI18n = (): {
     key: string,
     variables: Record<string, unknown>,
   ) => React.ReactElement | null;
-  language: ILanguageString;
+  currentLanguage: ILanguageString;
 } => {
   const i18n = useContext(RouterI18nContext);
   if (!i18n) {
     throw new Error("useRouter must be used within a <Router> Provider");
   }
 
-  return { trans: i18n.trans, t: i18n.t, language: i18n.current() };
+  return { trans: i18n.trans, t: i18n.t, currentLanguage: i18n.current() };
 };

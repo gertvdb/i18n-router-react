@@ -2,14 +2,14 @@ import { useRouterState } from "@tanstack/react-router";
 import { extractRouteLocale } from "@/Utils/Route/extractRouteLocale";
 import {
   createLocale,
+  ILanguageString,
   ILocale,
-  ILocaleString,
   IRegionString,
 } from "@gertvdb/locale";
 
 export const useRouteLocale = (): {
   locale: ILocale;
-  language: ILocaleString;
+  language: ILanguageString;
   region: IRegionString | undefined;
 } => {
   const locale = useRouterState({

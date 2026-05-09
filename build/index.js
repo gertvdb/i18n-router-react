@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useEffect, useSyncExternalStore } from 'react';
+import { createContext, useMemo, useEffect, useContext, useSyncExternalStore } from 'react';
 import { useRouterState, createRootRouteWithContext, createRoute, redirect, createRouter, RouterProvider, useParams, useSearch, useLoaderData, useRouteContext as useRouteContext$1, Outlet } from '@tanstack/react-router';
 import { createLocale } from '@gertvdb/locale';
 import { I18n } from '@lingui/core';
@@ -1173,13 +1173,6 @@ var createRouterI18n = /* @__PURE__ */ __name(({
 var RouterI18nContext = createContext(
   void 0
 );
-var useRouter = /* @__PURE__ */ __name(() => {
-  const routerContext = useContext(RouterContext);
-  if (!routerContext) {
-    throw new Error("useRouter must be used within a <Router> Provider");
-  }
-  return { router: routerContext };
-}, "useRouter");
 
 // src/Utils/Route/extractRouteLocale.tsx
 var extractRouteLocale = /* @__PURE__ */ __name(({
@@ -1203,12 +1196,15 @@ var useRouteLocale = /* @__PURE__ */ __name(() => {
 }, "useRouteLocale");
 var RouterOutlet = /* @__PURE__ */ __name(() => {
   const { language } = useRouteLocale();
-  const { i18n } = useRouter();
+  const i18n = useContext(RouterI18nContext);
   useEffect(() => {
-    if (i18n.current() !== language) {
+    if (i18n && i18n.current() !== language) {
       i18n.activate(language);
     }
   }, [i18n, language]);
+  if (!i18n) {
+    throw new Error("RouterOutlet must be used within a <Router> Provider");
+  }
   return /* @__PURE__ */ jsx(Outlet, {});
 }, "RouterOutlet");
 
@@ -1842,6 +1838,13 @@ function useRouteContext({
   return useRouteContext$1({ from: id });
 }
 __name(useRouteContext, "useRouteContext");
+var useRouter = /* @__PURE__ */ __name(() => {
+  const routerContext = useContext(RouterContext);
+  if (!routerContext) {
+    throw new Error("useRouter must be used within a <Router> Provider");
+  }
+  return { router: routerContext };
+}, "useRouter");
 var useRouterIsBootstrapped = /* @__PURE__ */ __name(() => {
   const { router } = useRouter();
   return useRouterState({
@@ -1874,7 +1877,7 @@ var useI18n = /* @__PURE__ */ __name(() => {
   if (!i18n) {
     throw new Error("useRouter must be used within a <Router> Provider");
   }
-  return { trans: i18n.trans, t: i18n.t, language: i18n.current() };
+  return { trans: i18n.trans, t: i18n.t, currentLanguage: i18n.current() };
 }, "useI18n");
 function useService(serviceToken) {
   return useService$1(serviceToken);

@@ -1175,13 +1175,6 @@ var createRouterI18n = /* @__PURE__ */ __name(({
 var RouterI18nContext = react.createContext(
   void 0
 );
-var useRouter = /* @__PURE__ */ __name(() => {
-  const routerContext = react.useContext(RouterContext);
-  if (!routerContext) {
-    throw new Error("useRouter must be used within a <Router> Provider");
-  }
-  return { router: routerContext };
-}, "useRouter");
 
 // src/Utils/Route/extractRouteLocale.tsx
 var extractRouteLocale = /* @__PURE__ */ __name(({
@@ -1205,12 +1198,15 @@ var useRouteLocale = /* @__PURE__ */ __name(() => {
 }, "useRouteLocale");
 var RouterOutlet = /* @__PURE__ */ __name(() => {
   const { language } = useRouteLocale();
-  const { i18n } = useRouter();
+  const i18n = react.useContext(RouterI18nContext);
   react.useEffect(() => {
-    if (i18n.current() !== language) {
+    if (i18n && i18n.current() !== language) {
       i18n.activate(language);
     }
   }, [i18n, language]);
+  if (!i18n) {
+    throw new Error("RouterOutlet must be used within a <Router> Provider");
+  }
   return /* @__PURE__ */ jsxRuntime.jsx(reactRouter.Outlet, {});
 }, "RouterOutlet");
 
@@ -1844,6 +1840,13 @@ function useRouteContext({
   return reactRouter.useRouteContext({ from: id });
 }
 __name(useRouteContext, "useRouteContext");
+var useRouter = /* @__PURE__ */ __name(() => {
+  const routerContext = react.useContext(RouterContext);
+  if (!routerContext) {
+    throw new Error("useRouter must be used within a <Router> Provider");
+  }
+  return { router: routerContext };
+}, "useRouter");
 var useRouterIsBootstrapped = /* @__PURE__ */ __name(() => {
   const { router } = useRouter();
   return reactRouter.useRouterState({
@@ -1876,7 +1879,7 @@ var useI18n = /* @__PURE__ */ __name(() => {
   if (!i18n) {
     throw new Error("useRouter must be used within a <Router> Provider");
   }
-  return { trans: i18n.trans, t: i18n.t, language: i18n.current() };
+  return { trans: i18n.trans, t: i18n.t, currentLanguage: i18n.current() };
 }, "useI18n");
 function useService(serviceToken) {
   return reactServiceContainer.useService(serviceToken);

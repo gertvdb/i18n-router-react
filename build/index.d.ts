@@ -1,7 +1,7 @@
 import * as React from 'react';
 import React__default from 'react';
 import { NotFoundRouteProps, ErrorComponentProps } from '@tanstack/react-router';
-import { ILocale, ILanguageString, IRegionString, ILocaleString } from '@gertvdb/locale';
+import { ILocale, ILanguageString, IRegionString } from '@gertvdb/locale';
 import * as react_jsx_runtime from 'react/jsx-runtime';
 
 /**
@@ -343,7 +343,7 @@ declare const RouterI18nContext: React.Context<IRouterI18N | undefined>;
 
 declare const useRouteLocale: () => {
     locale: ILocale;
-    language: ILocaleString;
+    language: ILanguageString;
     region: IRegionString | undefined;
 };
 
@@ -368,7 +368,7 @@ declare const useI18nIsLoaded: () => boolean;
 declare const useI18n: () => {
     t: (key: string, variables?: Record<string, unknown>) => string;
     trans: (key: string, variables: Record<string, unknown>) => React__default.ReactElement | null;
-    language: ILanguageString;
+    currentLanguage: ILanguageString;
 };
 
 declare function useService<T, R = any>(serviceToken: T): R;

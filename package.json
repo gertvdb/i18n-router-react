@@ -1,6 +1,6 @@
 {
   "name": "@gertvdb/react-i18n-router",
-  "version": "0.1.38",
+  "version": "0.1.39",
   "repository": {
     "url": "https://github.com/gertvdb/i18n-router-react"
   },
@@ -38,11 +38,11 @@
     "build"
   ],
   "dependencies": {
-    "@gertvdb/locale": "^0.1.3",
     "fast-deep-equal": "^3.1.3",
     "react-service-container": "^0.2.6"
   },
   "peerDependencies": {
+    "@gertvdb/locale": "^0.1.3",
     "@lingui/core": "^6.0.0",
     "@lingui/react": "^6.0.0",
     "@tanstack/react-router": "^1.168.25",
@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.1.2",
+    "@gertvdb/locale": "^0.1.3",
     "@storybook/addon-a11y": "10.2.10",
     "@storybook/addon-docs": "10.2.10",
     "@storybook/addon-onboarding": "10.2.10",
